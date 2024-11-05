@@ -2,9 +2,14 @@
 
 ## 🚀 Nossa Equipe
 
-**Silvio Fittipaldi** (sfm@cesar.school)
-**Bernardo Heuer** (bchg@cesar.school)
-**Luís Felipe** (lfpb@cesar.school)
-**Lucas Santos** (lsc7@cesar.school)
-**Eduardo Roma** (erca@cesar.school)
-**Rodrigo Barreto** (rbnm@cesar.school)
+<ul>
+<li> Bernardo Heuer (bchg@cesar.school)</li>  
+<li> Silvio Fittipaldi (sfm@cesar.school)</li>  
+<li> Luís Felipe (lfpb@cesar.school)</li>  
+<li> Lucas Santos (lsc7@cesar.school)</li>  
+<li> Eduardo Roma (erca@cesar.school)</li>  
+<li> Rodrigo Barreto (rbnm@cesar.school)</li>  
+</ul>
+
+
+

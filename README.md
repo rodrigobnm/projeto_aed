@@ -8,29 +8,29 @@
 <table>
   <tr>
     <td align="center">
-      <img src="https://www.gravatar.com/avatar/c1d5b299ae7bfe1e25925d3d3c232bce?s=200" width="100" style="border-radius: 50%;"><br>
+      <img src="https://instagram.frec8-1.fna.fbcdn.net/v/t51.2885-19/461534324_846084491026619_9173353781816082446_n.jpg?stp=dst-jpg_s150x150&_nc_ht=instagram.frec8-1.fna.fbcdn.net&_nc_cat=111&_nc_ohc=BJLRSSB_9UwQ7kNvgFW0_pY&_nc_gid=8e49d1a26e1d4afcaab28fc30ee5d8f8&edm=ALGbJPMBAAAA&ccb=7-5&oh=00_AYCJlGwUAmmU2cWI4j8dsjmgFGCPPsaALBGXkSh4YrME4A&oe=672F27FE&_nc_sid=7d3ac5" width="100" style="border-radius: 50%;"><br>
       <b>Bernardo Heuer</b><br>
       <a href="mailto:bchg@cesar.school">bchg@cesar.school</a>
     </td>
     <td align="center">
-      <img src="https://www.gravatar.com/avatar/9f4e26782cdef9a53b1ef255e0c98d9f?s=200" width="100" style="border-radius: 50%;"><br>
+      <img src="https://instagram.frec8-1.fna.fbcdn.net/v/t51.2885-19/322999819_163548116401857_6154946068072353971_n.jpg?stp=dst-jpg_s150x150&_nc_ht=instagram.frec8-1.fna.fbcdn.net&_nc_cat=109&_nc_ohc=t7MOLXuZJiUQ7kNvgEF6G1r&_nc_gid=9c1b1ca8001946639da1373cb511a723&edm=ALGbJPMBAAAA&ccb=7-5&oh=00_AYCqFmfZ4q4oEbm07tq3MR_NdVHqrAnOZcCJZPWd0pAm7A&oe=672F462F&_nc_sid=7d3ac5" width="100" style="border-radius: 50%;"><br>
       <b>Silvio Fittipaldi</b><br>
       <a href="mailto:sfm@cesar.school">sfm@cesar.school</a>
     </td>
     <td align="center">
-      <img src="https://www.gravatar.com/avatar/a5e6dcd18787d3b4fd0c2728e749d9af?s=200" width="100" style="border-radius: 50%;"><br>
+      <img src="https://instagram.frec8-1.fna.fbcdn.net/v/t51.2885-19/449469134_887639863379809_7085544216625592831_n.jpg?stp=dst-jpg_s150x150&_nc_ht=instagram.frec8-1.fna.fbcdn.net&_nc_cat=101&_nc_ohc=zHf00aodFycQ7kNvgHoEaCa&_nc_gid=eac1d58e5e5c4d3f917386ff616bc273&edm=ALGbJPMBAAAA&ccb=7-5&oh=00_AYCxvyW3BRMZs8F62vKFuYoMQbiI6hHNS9DW7uDmrc44pw&oe=672F3529&_nc_sid=7d3ac5" width="100" style="border-radius: 50%;"><br>
       <b>Luís Felipe</b><br>
       <a href="mailto:lfpb@cesar.school">lfpb@cesar.school</a>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="https://www.gravatar.com/avatar/2f8dd3f738ceddc0e29b8fe769ae57c8?s=200" width="100" style="border-radius: 50%;"><br>
+      <img src="https://instagram.frec8-1.fna.fbcdn.net/v/t51.2885-19/448912282_998232024802324_1364862635242354184_n.jpg?stp=dst-jpg_s150x150&_nc_ht=instagram.frec8-1.fna.fbcdn.net&_nc_cat=104&_nc_ohc=3LoEplaoTMAQ7kNvgHGhAaM&_nc_gid=10650f0ee7e341d9bcb87e0212933d86&edm=ALGbJPMBAAAA&ccb=7-5&oh=00_AYAda065daMHkKHvyEBPtEruacfjax91LiTec0-80AcJfA&oe=672F30A4&_nc_sid=7d3ac5" width="100" style="border-radius: 50%;"><br>
       <b>Lucas Santos</b><br>
       <a href="mailto:lsc7@cesar.school">lsc7@cesar.school</a>
     </td>
     <td align="center">
-      <img src="https://www.gravatar.com/avatar/8b5af823a95b5f3c1edb6e9e04707f9e?s=200" width="100" style="border-radius: 50%;"><br>
+      <img src="https://instagram.frec8-1.fna.fbcdn.net/v/t51.2885-19/455652132_1220620649364532_2802373186097216596_n.jpg?stp=dst-jpg_s150x150&_nc_ht=instagram.frec8-1.fna.fbcdn.net&_nc_cat=104&_nc_ohc=2RBVRq1EfdYQ7kNvgFyAdje&_nc_gid=195f4460787c485c9e6484f9bf08e2d2&edm=ALGbJPMBAAAA&ccb=7-5&oh=00_AYA5FHUNcQNED5bKov9rUJXcO6LQ5to3hmEOwoWVIVd4Jg&oe=672F40C2&_nc_sid=7d3ac5" width="100" style="border-radius: 50%;"><br>
       <b>Eduardo Roma</b><br>
       <a href="mailto:erca@cesar.school">erca@cesar.school</a>
     </td>

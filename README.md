@@ -51,33 +51,19 @@
 
 ---
 
-### 📝 Sobre o Projeto
+### <p align="center">🎯 Instruções </p>
+
+---
+
+### <p align="center">📌 Tecnologias Utilizadas</p>
+
+- **Linguagens**: C
+- **Ferramentas**: Git, GitHub, Visual Studio Code, Canva
+
+---
+
+### <p align="center">📝 Sobre o Projeto</p>
 
 O Projeto AED (Algoritmos e Estruturas de Dados) é uma iniciativa que visa desenvolver e aplicar conhecimentos avançados de estruturação e manipulação de dados em ambientes práticos. Este projeto é conduzido por uma equipe dedicada e qualificada, pronta para enfrentar desafios e oferecer soluções inovadoras.
 
-### 🎯 Objetivos do Projeto
-
-1. **Explorar Algoritmos**: Implementação e análise de algoritmos fundamentais.
-2. **Desenvolvimento de Estruturas de Dados**: Aplicação e manipulação de diversas estruturas de dados para otimização.
-3. **Aplicação Prática**: Soluções que demonstrem a eficácia dos algoritmos em problemas reais.
-
 ---
-
-### 📌 Tecnologias Utilizadas
-
-- **Linguagens**: C, C++
-- **Ferramentas**: Git, GitHub, Visual Studio Code
-- **Metodologias**: Agile, Scrum
-
----
-
-### 📈 Progresso do Projeto
-
-- ✅ **Fase 1**: Levantamento de Requisitos
-- ✅ **Fase 2**: Estruturação dos Algoritmos
-- 🔄 **Fase 3**: Implementação e Testes
-- ⏳ **Fase 4**: Documentação e Apresentação Final
-
----
-
-Sinta-se à vontade para contatar qualquer membro da equipe para mais informações ou colaborações.

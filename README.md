@@ -52,7 +52,10 @@
 ---
 
 ### <p align="center">🎯 Instruções </p>
-
+    -
+    -
+    -
+    -
 ---
 
 ### <p align="center">📌 Tecnologias Utilizadas</p>
@@ -64,6 +67,6 @@
 
 ### <p align="center">📝 Sobre o Projeto</p>
 
-O Projeto AED (Algoritmos e Estruturas de Dados) é uma iniciativa que visa desenvolver e aplicar conhecimentos avançados de estruturação e manipulação de dados em ambientes práticos. Este projeto é conduzido por uma equipe dedicada e qualificada, pronta para enfrentar desafios e oferecer soluções inovadoras.
+#### <p align="center">O nosso jogo tem como temática o "Parque de esculturas Francisco Brennand"<p>
 
 ---

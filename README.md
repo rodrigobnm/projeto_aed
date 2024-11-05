@@ -35,7 +35,7 @@
       <a href="mailto:erca@cesar.school">erca@cesar.school</a>
     </td>
     <td align="center">
-      <img src="https://www.gravatar.com/avatar/5f9b5c2a05b2b4b5b1b2673e42d89d7f?s=200" width="100" style="border-radius: 50%;"><br>
+      <img src="https://instagram.frec8-1.fna.fbcdn.net/v/t51.2885-19/464051247_3894221624155373_7709055504515028723_n.jpg?stp=dst-jpg_s150x150&_nc_ht=instagram.frec8-1.fna.fbcdn.net&_nc_cat=105&_nc_ohc=mgwz7r8HhW0Q7kNvgFt6sEP&_nc_gid=45cbfe4dce0b4180bf4581c372e4753f&edm=AONqaaQBAAAA&ccb=7-5&oh=00_AYAra6qVuziqmeX6xOPGuRCezijZV1PF9koHoMIiHpIIuQ&oe=672F2EA4&_nc_sid=4e3341" width="100" style="border-radius: 50%;"><br>
       <b>Rodrigo Barreto</b><br>
       <a href="mailto:rbnm@cesar.school">rbnm@cesar.school</a>
     </td>

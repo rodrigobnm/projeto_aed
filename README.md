@@ -2,7 +2,7 @@
 
 ---
 
-## 🚀 Nossa Equipe
+## <p align="center">🚀 Nossa Equipe 🚀</p>
 
 <div align="center">
 <table>

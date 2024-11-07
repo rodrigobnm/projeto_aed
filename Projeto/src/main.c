@@ -1,15 +1,3 @@
-//
-// gcc main.c card.c -o jogo -I/usr/include/SDL2 -lSDL2 -lSDL2_image -lSDL2_ttf
-/// ./jogo
-//
-//
-//
-//
-//
-//
-//
-
-
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>

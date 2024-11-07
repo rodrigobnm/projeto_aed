@@ -6,8 +6,8 @@
 #include <string.h>
 #include <time.h>
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH 1000
+#define WINDOW_HEIGHT 800
 #define CARD_WIDTH 100
 #define CARD_HEIGHT 150
 #define NUM_CARDS 8
@@ -20,6 +20,7 @@ typedef struct Card {
     SDL_Texture* texture;
     struct Card* next;
     struct Card* prev;
+    int x, y;  // Adiciona coordenadas para a posição da carta
 } Card;
 
 // Estrutura para representar a lista de cartas
@@ -30,16 +31,19 @@ typedef struct {
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
-SDL_Texture* backgroundTexture = NULL;
 TTF_Font* font = NULL;
 
 CardList cardList;
 int lives = 3;
+Card* dragged_card = NULL;
+int offset_x = 0, offset_y = 0;
 
 // Funções para gerenciamento da lista encadeada
 void add_card(CardList* list, const char* name, int birth_year, const char* image_path);
 void shuffle_cards(CardList* list);
 int is_sorted(CardList* list);
+Card* get_card_at(int x, int y);
+void rearrange_cards(Card* dropped_card);
 
 // Funções SDL e de renderização
 int initialize();
@@ -48,7 +52,7 @@ SDL_Texture* load_texture(const char* path);
 void render_menu();
 void render_game();
 void cleanup();
-void render_button(SDL_Rect rect, const char* text);  // Declaração da função render_button
+void render_button(SDL_Rect rect, const char* text);
 
 int main() {
     if (!initialize()) return -1;
@@ -83,7 +87,23 @@ int main() {
                     } else if (x >= 300 && x <= 500 && y >= 350 && y <= 400) {
                         running = 0;
                     }
+                } else {
+                    // Detectar clique na carta para arrastar
+                    Card* card = get_card_at(x, y);
+                    if (card) {
+                        dragged_card = card;
+                        offset_x = x - card->x;
+                        offset_y = y - card->y;
+                    }
                 }
+            } else if (event.type == SDL_MOUSEMOTION && dragged_card) {
+                // Atualizar posição da carta arrastada
+                dragged_card->x = event.motion.x - offset_x;
+                dragged_card->y = event.motion.y - offset_y;
+            } else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT && dragged_card) {
+                // Soltar a carta e reorganizar a lista
+                rearrange_cards(dragged_card);
+                dragged_card = NULL;
             }
         }
 
@@ -122,6 +142,10 @@ void add_card(CardList* list, const char* name, int birth_year, const char* imag
     else list->head = new_card;
 
     list->tail = new_card;
+
+    // Define a posição inicial da carta
+    new_card->x = 50 + (CARD_WIDTH + 10) * (list->tail ? NUM_CARDS - 1 : 0);
+    new_card->y = 200;
 }
 
 void shuffle_cards(CardList* list) {
@@ -150,6 +174,10 @@ void shuffle_cards(CardList* list) {
 
         if (i < NUM_CARDS - 1) cards[i]->next = cards[i + 1];
         else cards[i]->next = NULL;
+
+        // Define a posição das cartas após o embaralhamento
+        cards[i]->x = 50 + (CARD_WIDTH + 10) * i;
+        cards[i]->y = 200;
     }
 }
 
@@ -166,7 +194,6 @@ int is_sorted(CardList* list) {
 
 void render_menu() {
     SDL_Color titleColor = {0, 0, 0, 255}; // Preto
-
     render_text("Jogo de Ordenação - Artistas de Pernambuco", WINDOW_WIDTH / 2, 100, titleColor);
 
     SDL_Rect startButton = {300, 250, 200, 50};
@@ -178,18 +205,29 @@ void render_menu() {
 
 void render_game() {
     Card* current = cardList.head;
-    int x = 50;
-    int y = 200;
 
     while (current) {
-        SDL_Rect card_rect = {x, y, CARD_WIDTH, CARD_HEIGHT};
+        SDL_Rect card_rect = {current->x, current->y, CARD_WIDTH, CARD_HEIGHT};
         SDL_RenderCopy(renderer, current->texture, NULL, &card_rect);
-
-        x += CARD_WIDTH + 10;
         current = current->next;
     }
 
     render_text("Arraste as cartas para ordenar", WINDOW_WIDTH / 2, 100, (SDL_Color){255, 255, 255, 255});
+}
+
+Card* get_card_at(int x, int y) {
+    Card* current = cardList.head;
+    while (current) {
+        if (x >= current->x && x <= current->x + CARD_WIDTH && y >= current->y && y <= current->y + CARD_HEIGHT) {
+            return current;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
+void rearrange_cards(Card* dropped_card) {
+    // Ajustar lógica de reorganização se necessário
 }
 
 int initialize() {
@@ -208,8 +246,8 @@ int initialize() {
 void render_text(const char* text, int x, int y, SDL_Color color) {
     SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_Rect textRect = {x - surface->w / 2, y - surface->h / 2, surface->w, surface->h};
-    SDL_RenderCopy(renderer, texture, NULL, &textRect);
+    SDL_Rect rect = {x - surface->w / 2, y - surface->h / 2, surface->w, surface->h};
+    SDL_RenderCopy(renderer, texture, NULL, &rect);
     SDL_FreeSurface(surface);
     SDL_DestroyTexture(texture);
 }
@@ -221,34 +259,24 @@ SDL_Texture* load_texture(const char* path) {
     return texture;
 }
 
+void render_button(SDL_Rect rect, const char* text) {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderFillRect(renderer, &rect);
+    render_text(text, rect.x + rect.w / 2, rect.y + rect.h / 2, (SDL_Color){255, 255, 255, 255});
+}
+
 void cleanup() {
     Card* current = cardList.head;
     while (current) {
-        Card* next = current->next;
         SDL_DestroyTexture(current->texture);
-        free(current);
-        current = next;
+        Card* temp = current;
+        current = current->next;
+        free(temp);
     }
 
-    if (backgroundTexture) SDL_DestroyTexture(backgroundTexture);
-    if (font) TTF_CloseFont(font);
-    if (renderer) SDL_DestroyRenderer(renderer);
-    if (window) SDL_DestroyWindow(window);
+    TTF_CloseFont(font);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
     TTF_Quit();
     SDL_Quit();
-}
-
-void render_button(SDL_Rect rect, const char* text) {
-    SDL_Color borderColor = {25, 25, 25, 255};  // Cor da borda
-    SDL_Color backgroundColor = {150, 150, 150, 255};  // Cor do fundo do botão
-    SDL_Color textColor = {0, 0, 0, 255};  // Cor do texto
-
-    SDL_SetRenderDrawColor(renderer, borderColor.r, borderColor.g, borderColor.b, borderColor.a);
-    SDL_RenderFillRect(renderer, &rect);
-
-    SDL_Rect innerRect = {rect.x + 2, rect.y + 2, rect.w - 4, rect.h - 4};
-    SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
-    SDL_RenderFillRect(renderer, &innerRect);
-
-    render_text(text, rect.x + rect.w / 2, rect.y + rect.h / 2, textColor);
 }

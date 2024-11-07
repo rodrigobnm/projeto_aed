@@ -10,9 +10,8 @@
 #define WINDOW_HEIGHT 800
 #define CARD_WIDTH 100
 #define CARD_HEIGHT 150
-#define NUM_CARDS 8
+#define NUM_CARDS 7
 
-// Estrutura para representar cada carta na lista
 typedef struct Card {
     char name[30];
     int birth_year;
@@ -20,10 +19,10 @@ typedef struct Card {
     SDL_Texture* texture;
     struct Card* next;
     struct Card* prev;
-    int x, y;  // Adiciona coordenadas para a posição da carta
+    int x, y;       // Coordenadas da posição da carta
+    int slot_index; // Índice do encaixe onde a carta foi solta
 } Card;
 
-// Estrutura para representar a lista de cartas
 typedef struct {
     Card* head;
     Card* tail;
@@ -37,12 +36,15 @@ CardList cardList;
 int lives = 3;
 Card* dragged_card = NULL;
 int offset_x = 0, offset_y = 0;
+SDL_Rect slots[NUM_CARDS]; // Encaixes para as cartas
 
-// Funções para gerenciamento da lista encadeada
+// Funções de gerenciamento da lista encadeada
 void add_card(CardList* list, const char* name, int birth_year, const char* image_path);
 void shuffle_cards(CardList* list);
 int is_sorted(CardList* list);
+void check_order();
 Card* get_card_at(int x, int y);
+int get_slot_index(int x, int y);
 void rearrange_cards(Card* dropped_card);
 
 // Funções SDL e de renderização
@@ -64,10 +66,17 @@ int main() {
     add_card(&cardList, "Gilberto Freyre", 1900, "gilberto_freyre.png");
     add_card(&cardList, "J Borges", 1935, "j_borges.png");
     add_card(&cardList, "Lampiao", 1898, "lampiao.png");
-    add_card(&cardList, "Lia de Itamaraca", 1944, "lia_de_itamaraca.png");
     add_card(&cardList, "Luiz Gonzaga", 1912, "luiz_gonzaga.png");
 
     shuffle_cards(&cardList);
+
+    // Inicializar posições dos encaixes para as cartas
+    for (int i = 0; i < NUM_CARDS; i++) {
+        slots[i].x = 50 + (CARD_WIDTH + 10) * i;
+        slots[i].y = 400; // Posição dos encaixes abaixo das cartas
+        slots[i].w = CARD_WIDTH;
+        slots[i].h = CARD_HEIGHT;
+    }
 
     int running = 1;
     int in_menu = 1;
@@ -88,21 +97,27 @@ int main() {
                         running = 0;
                     }
                 } else {
-                    // Detectar clique na carta para arrastar
                     Card* card = get_card_at(x, y);
                     if (card) {
                         dragged_card = card;
                         offset_x = x - card->x;
                         offset_y = y - card->y;
                     }
+                    // Verificar clique no botão "Checar"
+                    if (x >= 400 && x <= 600 && y >= 600 && y <= 650) {
+                        check_order();
+                    }
                 }
             } else if (event.type == SDL_MOUSEMOTION && dragged_card) {
-                // Atualizar posição da carta arrastada
                 dragged_card->x = event.motion.x - offset_x;
                 dragged_card->y = event.motion.y - offset_y;
             } else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT && dragged_card) {
-                // Soltar a carta e reorganizar a lista
-                rearrange_cards(dragged_card);
+                int slot_index = get_slot_index(dragged_card->x, dragged_card->y);
+                if (slot_index != -1) {
+                    dragged_card->x = slots[slot_index].x;
+                    dragged_card->y = slots[slot_index].y;
+                    dragged_card->slot_index = slot_index;
+                }
                 dragged_card = NULL;
             }
         }
@@ -142,10 +157,9 @@ void add_card(CardList* list, const char* name, int birth_year, const char* imag
     else list->head = new_card;
 
     list->tail = new_card;
-
-    // Define a posição inicial da carta
     new_card->x = 50 + (CARD_WIDTH + 10) * (list->tail ? NUM_CARDS - 1 : 0);
     new_card->y = 200;
+    new_card->slot_index = -1; // Nenhum encaixe inicialmente
 }
 
 void shuffle_cards(CardList* list) {
@@ -175,7 +189,6 @@ void shuffle_cards(CardList* list) {
         if (i < NUM_CARDS - 1) cards[i]->next = cards[i + 1];
         else cards[i]->next = NULL;
 
-        // Define a posição das cartas após o embaralhamento
         cards[i]->x = 50 + (CARD_WIDTH + 10) * i;
         cards[i]->y = 200;
     }
@@ -192,27 +205,31 @@ int is_sorted(CardList* list) {
     return 1;
 }
 
-void render_menu() {
-    SDL_Color titleColor = {0, 0, 0, 255}; // Preto
-    render_text("Jogo de Ordenação - Artistas de Pernambuco", WINDOW_WIDTH / 2, 100, titleColor);
+void check_order() {
+    int sorted = 1;
+    for (int i = 0; i < NUM_CARDS - 1; i++) {
+        Card* card1 = NULL;
+        Card* card2 = NULL;
 
-    SDL_Rect startButton = {300, 250, 200, 50};
-    render_button(startButton, "Iniciar");
+        Card* current = cardList.head;
+        while (current) {
+            if (current->slot_index == i) card1 = current;
+            if (current->slot_index == i + 1) card2 = current;
+            current = current->next;
+        }
 
-    SDL_Rect exitButton = {300, 350, 200, 50};
-    render_button(exitButton, "Sair");
-}
-
-void render_game() {
-    Card* current = cardList.head;
-
-    while (current) {
-        SDL_Rect card_rect = {current->x, current->y, CARD_WIDTH, CARD_HEIGHT};
-        SDL_RenderCopy(renderer, current->texture, NULL, &card_rect);
-        current = current->next;
+        if (card1 && card2 && card1->birth_year > card2->birth_year) {
+            sorted = 0;
+            break;
+        }
     }
 
-    render_text("Arraste as cartas para ordenar", WINDOW_WIDTH / 2, 100, (SDL_Color){255, 255, 255, 255});
+    if (sorted) {
+        printf("Você venceu!\n");
+    } else {
+        printf("Ordem incorreta. Tente novamente!\n");
+        lives--;
+    }
 }
 
 Card* get_card_at(int x, int y) {
@@ -226,8 +243,46 @@ Card* get_card_at(int x, int y) {
     return NULL;
 }
 
-void rearrange_cards(Card* dropped_card) {
-    // Ajustar lógica de reorganização se necessário
+int get_slot_index(int x, int y) {
+    for (int i = 0; i < NUM_CARDS; i++) {
+        if (x >= slots[i].x && x <= slots[i].x + slots[i].w && y >= slots[i].y && y <= slots[i].y + slots[i].h) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void render_menu() {
+    render_text("Menu Principal", WINDOW_WIDTH / 2, 100, (SDL_Color){255, 255, 255, 255});
+    SDL_Rect start_button = {300, 250, 200, 50};
+    SDL_Rect quit_button = {300, 350, 200, 50};
+    render_button(start_button, "Iniciar Jogo");
+    render_button(quit_button, "Sair");
+}
+
+void render_game() {
+    render_text("Arraste as cartas para os encaixes na ordem correta", WINDOW_WIDTH / 2, 50, (SDL_Color){255, 255, 255, 255});
+    
+    Card* current = cardList.head;
+    while (current) {
+        SDL_Rect rect = {current->x, current->y, CARD_WIDTH, CARD_HEIGHT};
+        SDL_RenderCopy(renderer, current->texture, NULL, &rect);
+        current = current->next;
+    }
+
+    for (int i = 0; i < NUM_CARDS; i++) {
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderDrawRect(renderer, &slots[i]);
+    }
+
+    SDL_Rect check_button = {400, 600, 200, 50};
+    render_button(check_button, "Checar Ordem");
+}
+
+void render_button(SDL_Rect rect, const char* text) {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderFillRect(renderer, &rect);
+    render_text(text, rect.x + rect.w / 2, rect.y + rect.h / 2, (SDL_Color){255, 255, 255, 255});
 }
 
 int initialize() {
@@ -257,12 +312,6 @@ SDL_Texture* load_texture(const char* path) {
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
     return texture;
-}
-
-void render_button(SDL_Rect rect, const char* text) {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &rect);
-    render_text(text, rect.x + rect.w / 2, rect.y + rect.h / 2, (SDL_Color){255, 255, 255, 255});
 }
 
 void cleanup() {

@@ -15,6 +15,9 @@
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 SDL_Texture* backgroundTexture = NULL;
+SDL_Texture* blurredTexture = NULL;
+SDL_Texture* load_texture(const char* path);
+SDL_Texture* create_blurred_texture(SDL_Texture* texture);
 TTF_Font* font = NULL;
 
 int initialize();
@@ -26,10 +29,21 @@ void cleanup();
 int main() {
     if (!initialize()) return -1;
 
-    backgroundTexture = load_texture("background.jpg"); // Substitua "background.jpg" pelo caminho da sua imagem
-    
-    // Aplicar desfoque na imagem
-    SDL_Texture* blurredTexture = create_blurred_texture(backgroundTexture);
+    // Carregar a imagem de fundo
+    backgroundTexture = load_texture("imagemdefundomenu.png");
+    if (!backgroundTexture) {
+        printf("Erro: Não foi possível carregar a imagem de fundo.\n");
+        cleanup();
+        return -1;
+    }
+
+    // Criar a textura borrada a partir da imagem de fundo
+    blurredTexture = create_blurred_texture(backgroundTexture);
+    if (!blurredTexture) {
+        printf("Erro: Não foi possível criar a textura borrada.\n");
+        cleanup();
+        return -1;
+    }
 
     int running = 1;
     int in_menu = 1;
@@ -59,7 +73,9 @@ int main() {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Tela de fundo preta
         SDL_RenderClear(renderer);
 
+        // Renderizar a imagem de fundo borrada apenas no menu
         if (in_menu) {
+            SDL_RenderCopy(renderer, blurredTexture, NULL, NULL);
             render_menu();
         }
 
@@ -103,6 +119,47 @@ int initialize() {
     return 1;
 }
 
+SDL_Texture* load_texture(const char* path) {
+    SDL_Surface* surface = IMG_Load(path);
+    if (!surface) {
+        printf("Erro ao carregar imagem %s: %s\n", path, IMG_GetError());
+        return NULL;
+    }
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+
+    if (!texture) {
+        printf("Erro ao criar textura a partir da imagem %s: %s\n", path, SDL_GetError());
+    }
+
+    return texture;
+}
+
+SDL_Texture* create_blurred_texture(SDL_Texture* texture) {
+    int width, height;
+    SDL_QueryTexture(texture, NULL, NULL, &width, &height);
+
+    SDL_Texture* blurred_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
+    if (!blurred_texture) {
+        printf("Erro ao criar textura borrada: %s\n", SDL_GetError());
+        return NULL;
+    }
+
+    SDL_SetTextureBlendMode(blurred_texture, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(renderer, blurred_texture);
+
+    for (int offset_x = -2; offset_x <= 2; offset_x++) {
+        for (int offset_y = -2; offset_y <= 2; offset_y++) {
+            SDL_Rect dest_rect = { offset_x, offset_y, width, height };
+            SDL_RenderCopy(renderer, texture, NULL, &dest_rect);
+        }
+    }
+
+    SDL_SetRenderTarget(renderer, NULL);
+    return blurred_texture;
+}
+
 void render_text(const char* text, int x, int y, SDL_Color color) {
     SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -121,36 +178,32 @@ void render_text(const char* text, int x, int y, SDL_Color color) {
 void render_button(SDL_Rect rect, const char* text) {
     SDL_Color borderColor = {25, 25, 25, 255};  // Borda escura
     SDL_Color backgroundColor = {150, 150, 150, 255};  // Cinza claro
-    SDL_Color textColor = {255, 255, 255, 255};  // Branco
+    SDL_Color textColor = {0, 0, 0, 255};  // Preto
 
-    // Desenhar fundo do botão
     SDL_SetRenderDrawColor(renderer, backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
     SDL_RenderFillRect(renderer, &rect);
 
-    // Desenhar borda do botão
     SDL_SetRenderDrawColor(renderer, borderColor.r, borderColor.g, borderColor.b, borderColor.a);
     SDL_RenderDrawRect(renderer, &rect);
 
-    // Renderizar texto do botão centralizado
     render_text(text, rect.x + rect.w / 2, rect.y + rect.h / 2, textColor);
 }
 
 void render_menu() {
-    SDL_Color titleColor = {255, 255, 255, 255}; // Branco
+    SDL_Color titleColor = {0, 0, 0, 255}; // Preto
 
-    // Renderizar título
     render_text("Menu do Jogo", WINDOW_WIDTH / 2, 100, titleColor);
 
-    // Botão "Iniciar"
     SDL_Rect startButton = {300, 250, 200, 50};
     render_button(startButton, "Iniciar");
 
-    // Botão "Sair"
     SDL_Rect exitButton = {300, 350, 200, 50};
     render_button(exitButton, "Sair");
 }
 
 void cleanup() {
+    if (backgroundTexture) SDL_DestroyTexture(backgroundTexture);
+    if (blurredTexture) SDL_DestroyTexture(blurredTexture);
     if (font) TTF_CloseFont(font);
     if (renderer) SDL_DestroyRenderer(renderer);
     if (window) SDL_DestroyWindow(window);

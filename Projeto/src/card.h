@@ -14,4 +14,7 @@ typedef struct {
 void flip_card(Card* card);
 int check_match(Card* card1, Card* card2);
 
+SDL_Texture* load_texture(const char* path);
+SDL_Texture* create_blurred_texture(SDL_Texture* texture);
+
 #endif

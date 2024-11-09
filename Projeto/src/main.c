@@ -6,11 +6,11 @@
 #include <string.h>
 #include <time.h>
 
-#define WINDOW_WIDTH 1000
+#define WINDOW_WIDTH 1300
 #define WINDOW_HEIGHT 800
 #define CARD_WIDTH 100
 #define CARD_HEIGHT 150
-#define NUM_CARDS 7
+#define NUM_CARDS 9  // Atualizado para incluir duas novas cartas
 
 typedef struct Card {
     char name[30];
@@ -41,11 +41,11 @@ SDL_Rect slots[NUM_CARDS]; // Encaixes para as cartas
 // Funções de gerenciamento da lista encadeada
 void add_card(CardList* list, const char* name, int birth_year, const char* image_path);
 void shuffle_cards(CardList* list);
-int is_sorted(CardList* list);
 void check_order();
+int is_sorted(CardList* list); // Adicionada a declaração da função is_sorted
 Card* get_card_at(int x, int y);
 int get_slot_index(int x, int y);
-void rearrange_cards(Card* dropped_card);
+void render_feedback(int slot_index, int correct);
 
 // Funções SDL e de renderização
 int initialize();
@@ -59,7 +59,7 @@ void render_button(SDL_Rect rect, const char* text);
 int main() {
     if (!initialize()) return -1;
 
-    // Inicializar lista de cartas
+    // Inicializar lista de cartas com as novas cartas
     add_card(&cardList, "Alceu Valenca", 1946, "alceu_valenca.png");
     add_card(&cardList, "Ariano Suassuna", 1927, "ariano_suassuna.png");
     add_card(&cardList, "Chico Science", 1966, "chico_science.png");
@@ -67,13 +67,15 @@ int main() {
     add_card(&cardList, "J Borges", 1935, "j_borges.png");
     add_card(&cardList, "Lampiao", 1898, "lampiao.png");
     add_card(&cardList, "Luiz Gonzaga", 1912, "luiz_gonzaga.png");
+    add_card(&cardList, "Mestre Vitalino", 1909, "mestre_vitalino.png");
+    add_card(&cardList, "Ila de Itamaraca", 1943, "ila_de_itamaraca.png");
 
     shuffle_cards(&cardList);
 
     // Inicializar posições dos encaixes para as cartas
     for (int i = 0; i < NUM_CARDS; i++) {
         slots[i].x = 50 + (CARD_WIDTH + 10) * i;
-        slots[i].y = 400; // Posição dos encaixes abaixo das cartas
+        slots[i].y = 400;
         slots[i].w = CARD_WIDTH;
         slots[i].h = CARD_HEIGHT;
     }
@@ -103,7 +105,6 @@ int main() {
                         offset_x = x - card->x;
                         offset_y = y - card->y;
                     }
-                    // Verificar clique no botão "Checar"
                     if (x >= 400 && x <= 600 && y >= 600 && y <= 650) {
                         check_order();
                     }
@@ -159,7 +160,56 @@ void add_card(CardList* list, const char* name, int birth_year, const char* imag
     list->tail = new_card;
     new_card->x = 50 + (CARD_WIDTH + 10) * (list->tail ? NUM_CARDS - 1 : 0);
     new_card->y = 200;
-    new_card->slot_index = -1; // Nenhum encaixe inicialmente
+    new_card->slot_index = -1;
+}
+
+int is_sorted(CardList* list) {
+    Card* current = list->head;
+    while (current && current->next) {
+        if (current->birth_year > current->next->birth_year) {
+            return 0;  // Não está em ordem
+        }
+        current = current->next;
+    }
+    return 1;  // Está em ordem
+}
+
+void check_order() {
+    Card* current = cardList.head;
+    int correct_order = 1;
+
+    for (int i = 0; i < NUM_CARDS - 1; i++) {
+        Card* card1 = NULL;
+        Card* card2 = NULL;
+
+        Card* temp = cardList.head;
+        while (temp) {
+            if (temp->slot_index == i) card1 = temp;
+            if (temp->slot_index == i + 1) card2 = temp;
+            temp = temp->next;
+        }
+
+        if (card1 && card2) {
+            if (card1->birth_year > card2->birth_year) {
+                render_feedback(i, 0);
+                correct_order = 0;
+            } else {
+                render_feedback(i, 1);
+            }
+        }
+    }
+
+    if (correct_order) {
+        printf("Você venceu!\n");
+    } else {
+        printf("Ordem incorreta. Tente novamente!\n");
+        lives--;
+    }
+}
+
+void render_feedback(int slot_index, int correct) {
+    SDL_Color color = correct ? (SDL_Color){0, 255, 0, 255} : (SDL_Color){255, 0, 0, 255};
+    render_text(correct ? "V" : "X", slots[slot_index].x + CARD_WIDTH / 2, slots[slot_index].y - 20, color);
 }
 
 void shuffle_cards(CardList* list) {
@@ -191,44 +241,6 @@ void shuffle_cards(CardList* list) {
 
         cards[i]->x = 50 + (CARD_WIDTH + 10) * i;
         cards[i]->y = 200;
-    }
-}
-
-int is_sorted(CardList* list) {
-    Card* current = list->head;
-    while (current && current->next) {
-        if (current->birth_year > current->next->birth_year) {
-            return 0;
-        }
-        current = current->next;
-    }
-    return 1;
-}
-
-void check_order() {
-    int sorted = 1;
-    for (int i = 0; i < NUM_CARDS - 1; i++) {
-        Card* card1 = NULL;
-        Card* card2 = NULL;
-
-        Card* current = cardList.head;
-        while (current) {
-            if (current->slot_index == i) card1 = current;
-            if (current->slot_index == i + 1) card2 = current;
-            current = current->next;
-        }
-
-        if (card1 && card2 && card1->birth_year > card2->birth_year) {
-            sorted = 0;
-            break;
-        }
-    }
-
-    if (sorted) {
-        printf("Você venceu!\n");
-    } else {
-        printf("Ordem incorreta. Tente novamente!\n");
-        lives--;
     }
 }
 

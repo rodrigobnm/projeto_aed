@@ -12,6 +12,7 @@
 #define CARD_HEIGHT 150
 #define NUM_CARDS 9
 
+
 typedef struct Card {
     char name[30];
     int birth_year;
@@ -38,6 +39,8 @@ int lives = 3;
 Card* dragged_card = NULL;
 int offset_x = 0, offset_y = 0;
 SDL_Rect slots[NUM_CARDS];
+int check_order_button_pressed = 0;  // Variável global para verificar o clique do botão
+
 
 // Declarações das funções
 void add_card(CardList* list, const char* name, int birth_year, const char* image_path);
@@ -58,7 +61,7 @@ void render_button(SDL_Rect rect, const char* text);
 
 int main() {
     if (!initialize()) return -1;
-
+    
     add_card(&cardList, "Alceu Valenca", 1946, "alceu_valenca.png");
     add_card(&cardList, "Ariano Suassuna", 1927, "ariano_suassuna.png");
     add_card(&cardList, "Chico Science", 1966, "chico_science.png");
@@ -71,77 +74,100 @@ int main() {
 
     shuffle_cards(&cardList);
 
+    // Ajuste diretamente no código onde você define os slots
     for (int i = 0; i < NUM_CARDS; i++) {
-        slots[i].x = 50 + (CARD_WIDTH + 10) * i;
-        slots[i].y = 400;
-        slots[i].w = CARD_WIDTH;
-        slots[i].h = CARD_HEIGHT;
-    }
+    // Calcular a posição inicial X para centralizar os slots
+    int total_width = (CARD_WIDTH + 10) * NUM_CARDS - 10;  // Largura total das cartas com o espaçamento
+    int starting_x = (WINDOW_WIDTH - total_width) / 2;      // Espaço à esquerda para centralizar
+
+    // Posição de cada slot
+    slots[i].x = starting_x + (CARD_WIDTH + 10) * i;  // Ajusta X com base no cálculo de centralização
+    slots[i].y = 400;  // Posição fixa no eixo Y para os slots
+    slots[i].w = CARD_WIDTH;
+    slots[i].h = CARD_HEIGHT;
+}
+
 
     int running = 1;
     int in_menu = 1;
     SDL_Event event;
 
-    while (running) {
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                running = 0;
-            } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
-                int x = event.button.x;
-                int y = event.button.y;
+while (running) {
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            running = 0;
+        } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+            int x = event.button.x;
+            int y = event.button.y;
 
-                if (in_menu) {
-                    if (x >= 300 && x <= 500 && y >= 250 && y <= 300) {
-                        in_menu = 0;
-                    } else if (x >= 300 && x <= 500 && y >= 350 && y <= 400) {
-                        running = 0;
-                    }
-                } else {
-                    Card* card = get_card_at(x, y);
-                    if (card) {
-                        dragged_card = card;
-                        offset_x = x - card->x;
-                        offset_y = y - card->y;
-                    }
-                    if (x >= 400 && x <= 600 && y >= 600 && y <= 650) {
-                        check_order();
-                    }
+            if (in_menu) {
+                if (x >= (WINDOW_WIDTH - 200) / 2 && x <= (WINDOW_WIDTH + 200) / 2 && y >= 250 && y <= 300)  {
+                    in_menu = 0;
+                } else if (x >= (WINDOW_WIDTH - 200) / 2 && x <= (WINDOW_WIDTH + 200) / 2 && y >= 350 && y <= 400) {
+                    running = 0;
                 }
-            } else if (event.type == SDL_MOUSEMOTION && dragged_card) {
-                dragged_card->x = event.motion.x - offset_x;
-                dragged_card->y = event.motion.y - offset_y;
-            } else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT && dragged_card) {
-                int slot_index = get_slot_index(dragged_card->x, dragged_card->y);
-                if (slot_index != -1) {
-                    dragged_card->x = slots[slot_index].x;
-                    dragged_card->y = slots[slot_index].y;
-                    dragged_card->slot_index = slot_index;
+            } else {
+                // Verificar se o botão "Voltar ao Menu" foi clicado
+                if (x >= 10 && x <= 160 && y >= 10 && y <= 50) {
+                    in_menu = 1;  // Volta para o menu
+                    lives = 3;  // Reseta o número de vidas
+                    // Resetar outras variáveis se necessário (como o estado do jogo)
                 }
-                dragged_card = NULL;
+
+                Card* card = get_card_at(x, y);
+                if (card) {
+                    dragged_card = card;
+                    offset_x = x - card->x;
+                    offset_y = y - card->y;
+                }
+
+                int button_x = (WINDOW_WIDTH - 200) / 2;  // Centraliza o botão horizontalmente
+                int button_y = 600;  // Posição fixa do botão no eixo Y
+                if (x >= button_x && x <= button_x + 200 && y >= button_y && y <= button_y + 50) {
+                    check_order();
+                }
             }
-        }
-
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
-
-        if (in_menu) {
-            render_menu();
-        } else {
-            render_game();
-            if (is_sorted(&cardList)) {
-                render_text("Parabéns! Você venceu!", WINDOW_WIDTH / 2, 50, (SDL_Color){0, 255, 0, 255});
-            } else if (lives <= 0) {
-                render_text("Game Over! Você perdeu todas as vidas.", WINDOW_WIDTH / 2, 50, (SDL_Color){255, 0, 0, 255});
+        } else if (event.type == SDL_MOUSEMOTION && dragged_card) {
+            dragged_card->x = event.motion.x - offset_x;
+            dragged_card->y = event.motion.y - offset_y;
+        } else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT && dragged_card) {
+            int slot_index = get_slot_index(dragged_card->x, dragged_card->y);
+            if (slot_index != -1) {
+                dragged_card->x = slots[slot_index].x;
+                dragged_card->y = slots[slot_index].y;
+                dragged_card->slot_index = slot_index;
             }
+            dragged_card = NULL;
         }
-
-        SDL_RenderPresent(renderer);
     }
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    if (in_menu) {
+        render_menu();
+    } else {
+        render_game();
+        
+        // Defina a posição das mensagens de vitória e game over
+        int message_y_position = 100 + CARD_HEIGHT + 20;  // Ajuste a posição para ficar acima das cartas e abaixo do texto superior
+        
+        if (is_sorted(&cardList)) {
+            render_text("Parabéns! Você venceu!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){0, 255, 0, 255});
+        } else if (lives <= 0) {
+            render_text("Game Over! Você perdeu todas as vidas.", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){255, 0, 0, 255});
+        }
+    }
+
+    SDL_RenderPresent(renderer);
+}
+
 
     cleanup();
     return 0;
 }
 
+// Função para adicionar uma carta à lista
 // Função para adicionar uma carta à lista
 void add_card(CardList* list, const char* name, int birth_year, const char* image_path) {
     Card* new_card = (Card*)malloc(sizeof(Card));
@@ -153,26 +179,46 @@ void add_card(CardList* list, const char* name, int birth_year, const char* imag
     new_card->next = NULL;
     new_card->prev = list->tail;
 
-    if (list->tail) list->tail->next = new_card;
-    else list->head = new_card;
+    if (list->tail) {
+        list->tail->next = new_card;
+    } else {
+        list->head = new_card;
+    }
 
     list->tail = new_card;
-    new_card->x = 50 + (CARD_WIDTH + 10) * (list->tail ? NUM_CARDS - 1 : 0);
-    new_card->y = 200;
-    new_card->slot_index = -1;
+
+    // Atualizar as posições das cartas após a adição
+    int total_width = (CARD_WIDTH + 10) * NUM_CARDS - 10;  // Largura total das cartas com espaçamento
+    int starting_x = (WINDOW_WIDTH - total_width) / 2;      // Espaço à esquerda para centralizar
+    int index = 0;
+
+    // Recalcular a posição de todas as cartas
+    Card* current = list->head;
+    while (current) {
+        current->x = starting_x + (CARD_WIDTH + 10) * index;
+        current->y = 200;  // Posição fixa no eixo Y
+        current->slot_index = -1;
+        current = current->next;
+        index++;
+    }
 }
 
 // Função para embaralhar as cartas
 void shuffle_cards(CardList* list) {
     srand(time(NULL));
+
+    // Copiar todas as cartas da lista para um array
     Card* cards[NUM_CARDS];
     Card* current = list->head;
+    int index = 0;
 
-    for (int i = 0; i < NUM_CARDS && current; i++) {
-        cards[i] = current;
+    // Copiar as cartas para o array
+    while (current) {
+        cards[index++] = current;
         current = current->next;
     }
 
+    // Embaralhar o array de cartas
     for (int i = NUM_CARDS - 1; i > 0; i--) {
         int j = rand() % (i + 1);
         Card* temp = cards[i];
@@ -180,18 +226,28 @@ void shuffle_cards(CardList* list) {
         cards[j] = temp;
     }
 
+    // Atualizar a lista de cartas com o novo embaralhamento
     list->head = cards[0];
     list->tail = cards[NUM_CARDS - 1];
 
+    // Atualizar as ligações entre as cartas na lista
     for (int i = 0; i < NUM_CARDS; i++) {
         if (i > 0) cards[i]->prev = cards[i - 1];
         else cards[i]->prev = NULL;
 
         if (i < NUM_CARDS - 1) cards[i]->next = cards[i + 1];
         else cards[i]->next = NULL;
+    }
 
-        cards[i]->x = 50 + (CARD_WIDTH + 10) * i;
-        cards[i]->y = 200;
+    // Recalcular as posições das cartas para manter a centralização
+    int total_width = (CARD_WIDTH + 10) * NUM_CARDS - 10;  // Largura total das cartas com espaçamento
+    int starting_x = (WINDOW_WIDTH - total_width) / 2;      // Espaço à esquerda para centralizar
+
+    // Atualizar as posições das cartas
+    for (int i = 0; i < NUM_CARDS; i++) {
+        cards[i]->x = starting_x + (CARD_WIDTH + 10) * i;
+        cards[i]->y = 200;  // Posição fixa no eixo Y
+        cards[i]->slot_index = -1;
     }
 }
 
@@ -244,30 +300,43 @@ SDL_Texture* load_background_texture(const char* character_name) {
 // Função para exibir o menu
 void render_menu() {
     render_text("Menu Principal", WINDOW_WIDTH / 2, 100, (SDL_Color){255, 255, 255, 255});
-    SDL_Rect start_button = {300, 250, 200, 50};
-    SDL_Rect quit_button = {300, 350, 200, 50};
+    SDL_Rect start_button = {WINDOW_WIDTH / 2 - 100, 250, 200, 50};
+    SDL_Rect quit_button = {WINDOW_WIDTH / 2 - 100, 350, 200, 50};
     render_button(start_button, "Iniciar Jogo");
     render_button(quit_button, "Sair");
 }
 
+
 // Função para renderizar o jogo
 void render_game() {
     render_text("Arraste as cartas para os encaixes na ordem correta", WINDOW_WIDTH / 2, 50, (SDL_Color){255, 255, 255, 255});
-    
+
+    // Ajusta a posição do botão (movendo-o para a direita)
+    SDL_Rect back_button = {40, 30, 150, 40};  
+
+    // Calcula a posição centralizada do texto dentro do botão
+    int text_x = back_button.x + back_button.w / 2;
+    int text_y = back_button.y + back_button.h / 2;
+
+    // Renderiza o texto na nova posição
+    render_text("Voltar ao Menu", text_x, text_y, (SDL_Color){255, 255, 255, 255});
+
+
+    // Resto do código que renderiza as cartas e slots
     Card* current = cardList.head;
     while (current) {
         if (current->background_texture) {
             SDL_RenderCopy(renderer, current->background_texture, NULL, NULL);
         }
-        
+
         SDL_Rect rect = {current->x, current->y, CARD_WIDTH, CARD_HEIGHT};
-        
+
         if (dragged_card == current) {
             SDL_SetRenderDrawColor(renderer, 50, 50, 50, 100);
             SDL_Rect shadow_rect = {current->x + 5, current->y + 5, CARD_WIDTH, CARD_HEIGHT};
             SDL_RenderFillRect(renderer, &shadow_rect);
         }
-        
+
         SDL_RenderCopy(renderer, current->texture, NULL, &rect);
         current = current->next;
     }
@@ -277,15 +346,56 @@ void render_game() {
         SDL_RenderDrawRect(renderer, &slots[i]);
     }
 
-    SDL_Rect check_button = {400, 600, 200, 50};
+    SDL_Rect check_button = {WINDOW_WIDTH / 2 - 100, 600, 200, 50};
     render_button(check_button, "Checar Ordem");
+
+    // Exibe a mensagem de erro abaixo do título, acima da área das cartas
+    if (check_order_button_pressed) {
+        int all_cards_in_slots = 1;  // Verifica se todas as cartas estão em slots válidos
+        Card* current = cardList.head;
+        while (current) {
+            if (current->slot_index == -1) {
+                all_cards_in_slots = 0;
+                break;
+            }
+            current = current->next;
+        }
+
+        // Se houver cartas fora dos slots, exibe a mensagem logo abaixo do texto inicial
+        if (!all_cards_in_slots) {
+            int message_y_position = 100; // Ajuste da posição Y para exibir abaixo do título
+            render_text("Todas as cartas devem ser inseridas!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){255, 0, 0, 255});
+        }
+    }
 }
+
+
+
 
 // Função para checar se a ordem está correta
 void check_order() {
-    Card* current = cardList.head;
-    int correct_order = 1;
+    check_order_button_pressed = 1;  // Marca que o botão "Checar Ordem" foi pressionado
 
+    // Verifica se todas as cartas estão em slots válidos
+    int all_cards_in_slots = 1;  // Assume que todas as cartas estão nos slots
+    Card* current = cardList.head;
+    while (current) {
+        if (current->slot_index == -1) {  // Se a carta não estiver em um slot válido
+            all_cards_in_slots = 0;  // Alguma carta não está no slot
+            break;
+        }
+        current = current->next;
+    }
+
+    // Se houver cartas fora dos slots, exibe a mensagem
+    if (!all_cards_in_slots) {
+        render_text("Todas as cartas devem ser inseridas!", WINDOW_WIDTH / 2, 550, (SDL_Color){255, 0, 0, 255});
+        return;  // Não faz mais nada se as cartas não estiverem nos slots
+    }
+
+    // Caso todas as cartas estejam no lugar correto, verifica se a ordem está correta
+    int correct_order = 1;
+    current = cardList.head;
     for (int i = 0; i < NUM_CARDS - 1; i++) {
         Card* card1 = NULL;
         Card* card2 = NULL;
@@ -299,14 +409,15 @@ void check_order() {
 
         if (card1 && card2) {
             if (card1->birth_year > card2->birth_year) {
-                render_feedback(i, 0);
+                render_feedback(i, 0);  // Se a ordem estiver errada
                 correct_order = 0;
             } else {
-                render_feedback(i, 1);
+                render_feedback(i, 1);  // Se a ordem estiver correta
             }
         }
     }
 
+    // Se a ordem estiver correta, mostra uma mensagem de vitória
     if (correct_order) {
         printf("Você venceu!\n");
     } else {
@@ -314,6 +425,7 @@ void check_order() {
         lives--;
     }
 }
+
 
 // Função para renderizar feedback visual
 void render_feedback(int slot_index, int correct) {
@@ -355,10 +467,12 @@ SDL_Texture* load_texture(const char* path) {
 
 // Função para renderizar um botão
 void render_button(SDL_Rect rect, const char* text) {
+    rect.x = (WINDOW_WIDTH - rect.w) / 2;  // Centralizar na largura da janela
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderFillRect(renderer, &rect);
     render_text(text, rect.x + rect.w / 2, rect.y + rect.h / 2, (SDL_Color){255, 255, 255, 255});
 }
+
 
 // Função de limpeza para liberar recursos
 void cleanup() {

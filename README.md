@@ -67,6 +67,6 @@
 
 ### <p align="center">📝 Sobre o Projeto</p>
 
-#### <p align="center">O nosso jogo tem como temática o "Parque de esculturas Francisco Brennand"<p>
+#### <p align="center">O nosso jogo tem como temática "Personalidades de grande relevância Pernambucana"<p>
 
 ---

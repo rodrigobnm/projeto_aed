@@ -35,13 +35,11 @@ SDL_Renderer* renderer = NULL;
 TTF_Font* font = NULL;
 
 CardList cardList;
-int lives = 3;
+int lives = 2;  // Atualizado de 3 para 2 vidas
 Card* dragged_card = NULL;
 int offset_x = 0, offset_y = 0;
 SDL_Rect slots[NUM_CARDS];
 int check_order_button_pressed = 0;  // Variável global para verificar o clique do botão
-
-
 
 // Declarações das funções
 void add_card(CardList* list, const char* name, int birth_year, const char* image_path);
@@ -108,7 +106,7 @@ int main() {
                 } else {
                     if (x >= 10 && x <= 160 && y >= 10 && y <= 50) {
                         in_menu = 1;
-                        lives = 3;
+                        lives = 2;
                         order_checked = 0;
                     }
 
@@ -123,7 +121,7 @@ int main() {
                     int button_y = 600;
                     if (x >= button_x && x <= button_x + 200 && y >= button_y && y <= button_y + 50) {
                         // Verificar a ordem e se todas as cartas estão nos slots
-                        if (check_order()) {
+                        if (check_order() == 1) {
                             order_check_result = 1;
                         } else {
                             order_check_result = 0;

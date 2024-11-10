@@ -10,7 +10,7 @@
 #define WINDOW_HEIGHT 800
 #define CARD_WIDTH 100
 #define CARD_HEIGHT 150
-#define NUM_CARDS 9
+#define NUM_CARDS 3
 
 
 typedef struct Card {
@@ -208,48 +208,46 @@ void shuffle_cards(CardList* list) {
     srand(time(NULL));
 
     // Copiar todas as cartas da lista para um array
-    Card* cards[NUM_CARDS];
+    Card* cards[9];  // Array para as 9 cartas originais
     Card* current = list->head;
     int index = 0;
 
     // Copiar as cartas para o array
-    while (current) {
+    while (current && index < 9) {
         cards[index++] = current;
         current = current->next;
     }
 
-    // Embaralhar o array de cartas
-    for (int i = NUM_CARDS - 1; i > 0; i--) {
+    // Embaralhar as 9 cartas
+    for (int i = 8; i > 0; i--) {
         int j = rand() % (i + 1);
         Card* temp = cards[i];
         cards[i] = cards[j];
         cards[j] = temp;
     }
 
-    // Atualizar a lista de cartas com o novo embaralhamento
+    // Atualizar a lista de cartas com apenas 3 cartas selecionadas
     list->head = cards[0];
     list->tail = cards[NUM_CARDS - 1];
 
     // Atualizar as ligações entre as cartas na lista
     for (int i = 0; i < NUM_CARDS; i++) {
-        if (i > 0) cards[i]->prev = cards[i - 1];
-        else cards[i]->prev = NULL;
-
-        if (i < NUM_CARDS - 1) cards[i]->next = cards[i + 1];
-        else cards[i]->next = NULL;
+        cards[i]->prev = (i > 0) ? cards[i - 1] : NULL;
+        cards[i]->next = (i < NUM_CARDS - 1) ? cards[i + 1] : NULL;
     }
 
     // Recalcular as posições das cartas para manter a centralização
-    int total_width = (CARD_WIDTH + 10) * NUM_CARDS - 10;  // Largura total das cartas com espaçamento
-    int starting_x = (WINDOW_WIDTH - total_width) / 2;      // Espaço à esquerda para centralizar
+    int total_width = (CARD_WIDTH + 10) * NUM_CARDS - 10;
+    int starting_x = (WINDOW_WIDTH - total_width) / 2;
 
     // Atualizar as posições das cartas
     for (int i = 0; i < NUM_CARDS; i++) {
         cards[i]->x = starting_x + (CARD_WIDTH + 10) * i;
-        cards[i]->y = 200;  // Posição fixa no eixo Y
+        cards[i]->y = 200;
         cards[i]->slot_index = -1;
     }
 }
+
 
 // Função para verificar se as cartas estão ordenadas
 int is_sorted(CardList* list) {

@@ -42,10 +42,11 @@ SDL_Rect slots[NUM_CARDS];
 int check_order_button_pressed = 0;  // Variável global para verificar o clique do botão
 
 
+
 // Declarações das funções
 void add_card(CardList* list, const char* name, int birth_year, const char* image_path);
 void shuffle_cards(CardList* list);
-void check_order();
+int check_order();
 int is_sorted(CardList* list);
 Card* get_card_at(int x, int y);
 int get_slot_index(int x, int y);
@@ -74,98 +75,113 @@ int main() {
 
     shuffle_cards(&cardList);
 
-    // Ajuste diretamente no código onde você define os slots
     for (int i = 0; i < NUM_CARDS; i++) {
-    // Calcular a posição inicial X para centralizar os slots
-    int total_width = (CARD_WIDTH + 10) * NUM_CARDS - 10;  // Largura total das cartas com o espaçamento
-    int starting_x = (WINDOW_WIDTH - total_width) / 2;      // Espaço à esquerda para centralizar
+        int total_width = (CARD_WIDTH + 10) * NUM_CARDS - 10;
+        int starting_x = (WINDOW_WIDTH - total_width) / 2;
 
-    // Posição de cada slot
-    slots[i].x = starting_x + (CARD_WIDTH + 10) * i;  // Ajusta X com base no cálculo de centralização
-    slots[i].y = 400;  // Posição fixa no eixo Y para os slots
-    slots[i].w = CARD_WIDTH;
-    slots[i].h = CARD_HEIGHT;
-}
-
+        slots[i].x = starting_x + (CARD_WIDTH + 10) * i;
+        slots[i].y = 400;
+        slots[i].w = CARD_WIDTH;
+        slots[i].h = CARD_HEIGHT;
+    }
 
     int running = 1;
     int in_menu = 1;
+    int order_checked = 0;
+    int order_check_result = 0;
     SDL_Event event;
 
-while (running) {
-    while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_QUIT) {
-            running = 0;
-        } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
-            int x = event.button.x;
-            int y = event.button.y;
+    while (running) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = 0;
+            } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                int x = event.button.x;
+                int y = event.button.y;
 
-            if (in_menu) {
-                if (x >= (WINDOW_WIDTH - 200) / 2 && x <= (WINDOW_WIDTH + 200) / 2 && y >= 250 && y <= 300)  {
-                    in_menu = 0;
-                } else if (x >= (WINDOW_WIDTH - 200) / 2 && x <= (WINDOW_WIDTH + 200) / 2 && y >= 350 && y <= 400) {
-                    running = 0;
-                }
-            } else {
-                // Verificar se o botão "Voltar ao Menu" foi clicado
-                if (x >= 10 && x <= 160 && y >= 10 && y <= 50) {
-                    in_menu = 1;  // Volta para o menu
-                    lives = 3;  // Reseta o número de vidas
-                    // Resetar outras variáveis se necessário (como o estado do jogo)
-                }
+                if (in_menu) {
+                    if (x >= (WINDOW_WIDTH - 200) / 2 && x <= (WINDOW_WIDTH + 200) / 2 && y >= 250 && y <= 300)  {
+                        in_menu = 0;
+                    } else if (x >= (WINDOW_WIDTH - 200) / 2 && x <= (WINDOW_WIDTH + 200) / 2 && y >= 350 && y <= 400) {
+                        running = 0;
+                    }
+                } else {
+                    if (x >= 10 && x <= 160 && y >= 10 && y <= 50) {
+                        in_menu = 1;
+                        lives = 3;
+                        order_checked = 0;
+                    }
 
-                Card* card = get_card_at(x, y);
-                if (card) {
-                    dragged_card = card;
-                    offset_x = x - card->x;
-                    offset_y = y - card->y;
-                }
+                    Card* card = get_card_at(x, y);
+                    if (card) {
+                        dragged_card = card;
+                        offset_x = x - card->x;
+                        offset_y = y - card->y;
+                    }
 
-                int button_x = (WINDOW_WIDTH - 200) / 2;  // Centraliza o botão horizontalmente
-                int button_y = 600;  // Posição fixa do botão no eixo Y
-                if (x >= button_x && x <= button_x + 200 && y >= button_y && y <= button_y + 50) {
-                    check_order();
+                    int button_x = (WINDOW_WIDTH - 200) / 2;
+                    int button_y = 600;
+                    if (x >= button_x && x <= button_x + 200 && y >= button_y && y <= button_y + 50) {
+                        // Verificar a ordem e se todas as cartas estão nos slots
+                        if (check_order()) {
+                            order_check_result = 1;
+                        } else {
+                            order_check_result = 0;
+                        }
+                        order_checked = 1;
+
+                        if (order_check_result == 1 || lives <= 0) {
+                            running = 0;
+                        }
+                    }
+                }
+            } else if (event.type == SDL_MOUSEMOTION && dragged_card) {
+                dragged_card->x = event.motion.x - offset_x;
+                dragged_card->y = event.motion.y - offset_y;
+            } else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT && dragged_card) {
+                int slot_index = get_slot_index(dragged_card->x, dragged_card->y);
+                if (slot_index != -1) {
+                    dragged_card->x = slots[slot_index].x;
+                    dragged_card->y = slots[slot_index].y;
+                    dragged_card->slot_index = slot_index;
+                }
+                dragged_card = NULL;
+            }
+        }
+
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+
+        if (in_menu) {
+            render_menu();
+        } else {
+            render_game();
+            
+            int message_y_position = 100 + CARD_WIDTH + 20;
+
+            if (order_checked) {
+                if (order_check_result == 1) { // Vitória, todas as cartas no lugar e na ordem
+                    render_text("Parabéns! Você venceu!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){0, 255, 0, 255});
+                    SDL_RenderPresent(renderer);
+                    SDL_Delay(5000);  // Atraso de 5 segundos antes de encerrar
+                    running = 0;      // Encerra o programa
+                } else if (lives <= 0) {  // Perda de vidas
+                    render_text("Game Over! Você perdeu todas as vidas.", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){255, 0, 0, 255});
+                    SDL_RenderPresent(renderer);
+                    SDL_Delay(5000);  // Atraso de 5 segundos antes de encerrar
+                    running = 0;      // Encerra o programa
                 }
             }
-        } else if (event.type == SDL_MOUSEMOTION && dragged_card) {
-            dragged_card->x = event.motion.x - offset_x;
-            dragged_card->y = event.motion.y - offset_y;
-        } else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT && dragged_card) {
-            int slot_index = get_slot_index(dragged_card->x, dragged_card->y);
-            if (slot_index != -1) {
-                dragged_card->x = slots[slot_index].x;
-                dragged_card->y = slots[slot_index].y;
-                dragged_card->slot_index = slot_index;
-            }
-            dragged_card = NULL;
         }
+
+        SDL_RenderPresent(renderer);
     }
-
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-
-    if (in_menu) {
-        render_menu();
-    } else {
-        render_game();
-        
-        // Defina a posição das mensagens de vitória e game over
-        int message_y_position = 100 + CARD_HEIGHT + 20;  // Ajuste a posição para ficar acima das cartas e abaixo do texto superior
-        
-        if (is_sorted(&cardList)) {
-            render_text("Parabéns! Você venceu!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){0, 255, 0, 255});
-        } else if (lives <= 0) {
-            render_text("Game Over! Você perdeu todas as vidas.", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){255, 0, 0, 255});
-        }
-    }
-
-    SDL_RenderPresent(renderer);
-}
-
 
     cleanup();
     return 0;
 }
+
+
 
 // Função para adicionar uma carta à lista
 // Função para adicionar uma carta à lista
@@ -317,7 +333,7 @@ void render_game() {
     int text_y = back_button.y + back_button.h / 2;
 
     // Renderiza o texto na nova posição
-    render_text("Voltar ao Menu", text_x, text_y, (SDL_Color){255, 255, 255, 255});
+    render_text("<--", text_x, text_y, (SDL_Color){255, 255, 255, 255});
 
 
     // Resto do código que renderiza as cartas e slots
@@ -371,58 +387,73 @@ void render_game() {
 
 
 // Função para checar se a ordem está correta
-void check_order() {
+int check_order() {
     check_order_button_pressed = 1;  // Marca que o botão "Checar Ordem" foi pressionado
 
     // Verifica se todas as cartas estão em slots válidos
-    int all_cards_in_slots = 1;  // Assume que todas as cartas estão nos slots
+    int all_cards_in_slots = 1;
     Card* current = cardList.head;
     while (current) {
-        if (current->slot_index == -1) {  // Se a carta não estiver em um slot válido
-            all_cards_in_slots = 0;  // Alguma carta não está no slot
+        if (current->slot_index == -1) {  // Se uma carta não estiver no slot
+            all_cards_in_slots = 0;
             break;
         }
         current = current->next;
     }
 
-    // Se houver cartas fora dos slots, exibe a mensagem
-    if (!all_cards_in_slots) {
-        render_text("Todas as cartas devem ser inseridas!", WINDOW_WIDTH / 2, 550, (SDL_Color){255, 0, 0, 255});
-        return;  // Não faz mais nada se as cartas não estiverem nos slots
-    }
+    // Se todas as cartas estiverem em slots válidos, verifica a ordem
+    if (all_cards_in_slots) {
+        int correct_order = 1;
+        current = cardList.head;
 
-    // Caso todas as cartas estejam no lugar correto, verifica se a ordem está correta
-    int correct_order = 1;
-    current = cardList.head;
-    for (int i = 0; i < NUM_CARDS - 1; i++) {
-        Card* card1 = NULL;
-        Card* card2 = NULL;
+        // Verifica se as cartas estão na ordem correta
+        for (int i = 0; i < NUM_CARDS - 1; i++) {
+            Card* card1 = NULL;
+            Card* card2 = NULL;
 
-        Card* temp = cardList.head;
-        while (temp) {
-            if (temp->slot_index == i) card1 = temp;
-            if (temp->slot_index == i + 1) card2 = temp;
-            temp = temp->next;
-        }
+            // Busca as cartas que estão nos slots i e i+1
+            Card* temp = cardList.head;
+            while (temp) {
+                if (temp->slot_index == i) card1 = temp;
+                if (temp->slot_index == i + 1) card2 = temp;
+                temp = temp->next;
+            }
 
-        if (card1 && card2) {
-            if (card1->birth_year > card2->birth_year) {
-                render_feedback(i, 0);  // Se a ordem estiver errada
-                correct_order = 0;
-            } else {
-                render_feedback(i, 1);  // Se a ordem estiver correta
+            // Verifica se as cartas estão na ordem correta
+            if (card1 && card2 && card1->birth_year > card2->birth_year) {
+                correct_order = 0;  // A ordem está errada
+                break;  // Se encontrou uma ordem errada, não precisa verificar mais
             }
         }
-    }
 
-    // Se a ordem estiver correta, mostra uma mensagem de vitória
-    if (correct_order) {
-        printf("Você venceu!\n");
+        // Se a ordem estiver errada, perde uma vida
+        if (!correct_order) {
+            lives--;  // Decrementa as vidas
+            printf("A ordem está errada. Você perdeu uma vida!\n");
+            if (lives <= 0) {
+                printf("Você perdeu todas as vidas. Fim de jogo!\n");
+                return -1;  // Fim de jogo se não houver mais vidas
+            }
+        }
+
+        // Se a ordem estiver correta, o jogador venceu
+        if (correct_order) {
+            printf("Parabéns! Você acertou a ordem das cartas!\n");
+            return 1;  // Vitória
+        }
+
+        // Se a ordem estiver errada, o jogo continua
+        return 0;  // O jogo continua
     } else {
-        printf("Ordem incorreta. Tente novamente!\n");
-        lives--;
+        // Se alguma carta não estiver nos slots, o jogo continua
+        return 0;  // O jogo continua
     }
 }
+
+
+
+
+
 
 
 // Função para renderizar feedback visual

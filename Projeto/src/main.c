@@ -57,6 +57,7 @@ void render_menu();
 void render_game();
 void cleanup();
 void render_button(SDL_Rect rect, const char* text);
+void insertion_sort_cards(CardList* list); 
 
 int main() {
     if (!initialize()) return -1;
@@ -165,6 +166,7 @@ int main() {
                     running = 0;      // Encerra o programa
                 } else if (lives <= 0) {  // Perda de vidas
                     render_text("Game Over! Você perdeu todas as vidas.", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){255, 0, 0, 255});
+                    render_text("Ordem Correta ", WINDOW_WIDTH / 2, message_y_position + 80, (SDL_Color){0, 255, 0, 255});
                     SDL_RenderPresent(renderer);
                     SDL_Delay(5000);  // Atraso de 5 segundos antes de encerrar
                     running = 0;      // Encerra o programa
@@ -323,18 +325,11 @@ void render_menu() {
 void render_game() {
     render_text("Arraste as cartas para os encaixes na ordem correta", WINDOW_WIDTH / 2, 50, (SDL_Color){255, 255, 255, 255});
 
-    // Ajusta a posição do botão (movendo-o para a direita)
-    SDL_Rect back_button = {40, 30, 150, 40};  
-
-    // Calcula a posição centralizada do texto dentro do botão
+    SDL_Rect back_button = {40, 30, 150, 40};
     int text_x = back_button.x + back_button.w / 2;
     int text_y = back_button.y + back_button.h / 2;
-
-    // Renderiza o texto na nova posição
     render_text("<--", text_x, text_y, (SDL_Color){255, 255, 255, 255});
 
-
-    // Resto do código que renderiza as cartas e slots
     Card* current = cardList.head;
     while (current) {
         if (current->background_texture) {
@@ -342,14 +337,19 @@ void render_game() {
         }
 
         SDL_Rect rect = {current->x, current->y, CARD_WIDTH, CARD_HEIGHT};
-
         if (dragged_card == current) {
             SDL_SetRenderDrawColor(renderer, 50, 50, 50, 100);
             SDL_Rect shadow_rect = {current->x + 5, current->y + 5, CARD_WIDTH, CARD_HEIGHT};
             SDL_RenderFillRect(renderer, &shadow_rect);
         }
 
+        // Renderiza a imagem do personagem
         SDL_RenderCopy(renderer, current->texture, NULL, &rect);
+
+        // Renderiza o nome do personagem abaixo da imagem
+        int name_y_position = current->y + CARD_HEIGHT + 10;  // Posição Y abaixo da imagem
+        render_text(current->name, current->x + CARD_WIDTH / 2, name_y_position, (SDL_Color){255, 255, 255, 255});
+
         current = current->next;
     }
 
@@ -361,9 +361,8 @@ void render_game() {
     SDL_Rect check_button = {WINDOW_WIDTH / 2 - 100, 600, 200, 50};
     render_button(check_button, "Checar Ordem");
 
-    // Exibe a mensagem de erro abaixo do título, acima da área das cartas
     if (check_order_button_pressed) {
-        int all_cards_in_slots = 1;  // Verifica se todas as cartas estão em slots válidos
+        int all_cards_in_slots = 1;
         Card* current = cardList.head;
         while (current) {
             if (current->slot_index == -1) {
@@ -373,9 +372,8 @@ void render_game() {
             current = current->next;
         }
 
-        // Se houver cartas fora dos slots, exibe a mensagem logo abaixo do texto inicial
         if (!all_cards_in_slots) {
-            int message_y_position = 100; // Ajuste da posição Y para exibir abaixo do título
+            int message_y_position = 100;
             render_text("Todas as cartas devem ser inseridas!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){255, 0, 0, 255});
         }
     }
@@ -386,30 +384,26 @@ void render_game() {
 
 // Função para checar se a ordem está correta
 int check_order() {
-    check_order_button_pressed = 1;  // Marca que o botão "Checar Ordem" foi pressionado
+    check_order_button_pressed = 1;
 
-    // Verifica se todas as cartas estão em slots válidos
     int all_cards_in_slots = 1;
     Card* current = cardList.head;
     while (current) {
-        if (current->slot_index == -1) {  // Se uma carta não estiver no slot
+        if (current->slot_index == -1) {
             all_cards_in_slots = 0;
             break;
         }
         current = current->next;
     }
 
-    // Se todas as cartas estiverem em slots válidos, verifica a ordem
     if (all_cards_in_slots) {
         int correct_order = 1;
         current = cardList.head;
 
-        // Verifica se as cartas estão na ordem correta
         for (int i = 0; i < NUM_CARDS - 1; i++) {
             Card* card1 = NULL;
             Card* card2 = NULL;
 
-            // Busca as cartas que estão nos slots i e i+1
             Card* temp = cardList.head;
             while (temp) {
                 if (temp->slot_index == i) card1 = temp;
@@ -417,34 +411,33 @@ int check_order() {
                 temp = temp->next;
             }
 
-            // Verifica se as cartas estão na ordem correta
             if (card1 && card2 && card1->birth_year > card2->birth_year) {
-                correct_order = 0;  // A ordem está errada
-                break;  // Se encontrou uma ordem errada, não precisa verificar mais
+                correct_order = 0;
+                break;
             }
         }
 
-        // Se a ordem estiver errada, perde uma vida
         if (!correct_order) {
-            lives--;  // Decrementa as vidas
+            lives--;
             printf("A ordem está errada. Você perdeu uma vida!\n");
             if (lives <= 0) {
                 printf("Você perdeu todas as vidas. Fim de jogo!\n");
-                return -1;  // Fim de jogo se não houver mais vidas
+
+                // Ordena as cartas e coloca nos slots ao perder todas as vidas
+                insertion_sort_cards(&cardList);
+
+                return -1;
             }
         }
 
-        // Se a ordem estiver correta, o jogador venceu
         if (correct_order) {
             printf("Parabéns! Você acertou a ordem das cartas!\n");
-            return 1;  // Vitória
+            return 1;
         }
 
-        // Se a ordem estiver errada, o jogo continua
-        return 0;  // O jogo continua
+        return 0;
     } else {
-        // Se alguma carta não estiver nos slots, o jogo continua
-        return 0;  // O jogo continua
+        return 0;
     }
 }
 
@@ -473,6 +466,58 @@ int initialize() {
     font = TTF_OpenFont("fonte_t.ttf", 32);
     return font != NULL && window && renderer;
 }
+
+// Função para ordenar as cartas usando o Insertion Sort
+void insertion_sort_cards(CardList* list) {
+    if (!list->head) return;
+
+    Card* sorted = NULL;
+
+    // Percorre cada carta na lista original
+    Card* current = list->head;
+    while (current) {
+        Card* next = current->next;
+        current->prev = current->next = NULL;
+
+        // Insere `current` na posição correta na lista `sorted`
+        if (!sorted || current->birth_year < sorted->birth_year) {
+            current->next = sorted;
+            if (sorted) sorted->prev = current;
+            sorted = current;
+        } else {
+            Card* temp = sorted;
+            while (temp->next && temp->next->birth_year < current->birth_year) {
+                temp = temp->next;
+            }
+            current->next = temp->next;
+            if (temp->next) temp->next->prev = current;
+            temp->next = current;
+            current->prev = temp;
+        }
+        current = next;
+    }
+
+    // Atualiza a lista original para apontar para a lista `sorted` agora ordenada
+    list->head = sorted;
+
+    // Reajusta `tail` para o último elemento da lista
+    list->tail = sorted;
+    while (list->tail && list->tail->next) {
+        list->tail = list->tail->next;
+    }
+
+    // Atualiza as posições e slots das cartas após ordenação
+    Card* card = list->head;
+    for (int i = 0; i < NUM_CARDS; i++) {
+        if (card) {
+            card->x = slots[i].x;
+            card->y = slots[i].y;
+            card->slot_index = i;  // Define o índice do slot
+            card = card->next;
+        }
+    }
+}
+
 
 // Função para renderizar texto
 void render_text(const char* text, int x, int y, SDL_Color color) {

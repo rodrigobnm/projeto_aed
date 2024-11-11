@@ -112,9 +112,8 @@ int main() {
                         running = 0;
                     }
                 } else {
-                    if (x >= 10 && x <= 160 && y >= 10 && y <= 50) {
+                    if (x >= 10 && x <= 160 && y >= 10 && y <= 70) {
                         in_menu = 1;
-                        lives = 2;
                         order_checked = 0;
                     }
 

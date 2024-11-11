@@ -33,6 +33,7 @@ typedef struct {
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 TTF_Font* font = NULL;
+SDL_Texture* heart_texture = NULL; 
 
 CardList cardList;
 int lives = 2;  // Atualizado de 3 para 2 vidas
@@ -160,7 +161,7 @@ int main() {
 
             if (order_checked) {
                 if (order_check_result == 1) { // Vitória, todas as cartas no lugar e na ordem
-                    render_text("Você venceu!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){0, 255, 0, 255});
+                    render_text("Voce venceu!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){0, 255, 0, 255});
                     SDL_RenderPresent(renderer);
                     SDL_Delay(5000);  // Atraso de 5 segundos antes de encerrar
                     running = 0;      // Encerra o programa
@@ -183,7 +184,6 @@ int main() {
 
 
 
-// Função para adicionar uma carta à lista
 // Função para adicionar uma carta à lista
 void add_card(CardList* list, const char* name, int birth_year, const char* image_path) {
     Card* new_card = (Card*)malloc(sizeof(Card));
@@ -320,16 +320,37 @@ void render_menu() {
     render_button(quit_button, "Sair");
 }
 
+// Função para renderizar as vidas do jogador na tela
+// Função para renderizar as vidas do jogador no canto inferior direito
+void render_lives() {
+    int heart_width = 50;
+    int heart_height = 50;
+    int spacing = 10;
+
+    for (int i = 0; i < lives; i++) {
+        // Posiciona os corações no canto inferior direito
+        SDL_Rect heart_rect = {
+            WINDOW_WIDTH - (heart_width + spacing) * (i + 1),  // Alinha da direita para a esquerda
+            WINDOW_HEIGHT - heart_height - 10,                 // Posiciona 10 pixels acima do limite inferior
+            heart_width,
+            heart_height
+        };
+        SDL_RenderCopy(renderer, heart_texture, NULL, &heart_rect);
+    }
+}
+
 
 // Função para renderizar o jogo
 void render_game() {
     render_text("Arraste as cartas para os encaixes na ordem correta", WINDOW_WIDTH / 2, 50, (SDL_Color){255, 255, 255, 255});
 
+    // Renderiza o botão voltar
     SDL_Rect back_button = {40, 30, 150, 40};
     int text_x = back_button.x + back_button.w / 2;
     int text_y = back_button.y + back_button.h / 2;
     render_text("<--", text_x, text_y, (SDL_Color){255, 255, 255, 255});
 
+    // Renderiza as cartas
     Card* current = cardList.head;
     while (current) {
         if (current->background_texture) {
@@ -358,10 +379,31 @@ void render_game() {
         SDL_RenderDrawRect(renderer, &slots[i]);
     }
 
+    // Renderiza o botão Checar Ordem
     SDL_Rect check_button = {WINDOW_WIDTH / 2 - 100, 600, 200, 50};
     render_button(check_button, "Checar Ordem");
 
-    if (check_order_button_pressed) {
+    // Renderiza as vidas (corações) na tela
+    render_lives();
+
+            if (check_order_button_pressed) {
+        int all_cards_in_slots = 1;
+        Card* current = cardList.head;
+        while (current) {
+            if (current->slot_index == -1) {
+                all_cards_in_slots = 0;
+                break;
+            }
+            current = current->next;
+        }
+
+        if (!all_cards_in_slots) {
+            int message_y_position = 100;
+            render_text("Todas as cartas devem ser inseridas!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){255, 0, 0, 255});
+        }
+    }
+    
+if (check_order_button_pressed) {
         int all_cards_in_slots = 1;
         Card* current = cardList.head;
         while (current) {
@@ -378,7 +420,6 @@ void render_game() {
         }
     }
 }
-
 
 
 
@@ -419,9 +460,9 @@ int check_order() {
 
         if (!correct_order) {
             lives--;
-            printf("A ordem está errada. Você perdeu uma vida!\n");
+            printf("A ordem está errada. Voce perdeu uma vida!\n");
             if (lives <= 0) {
-                printf("Você perdeu todas as vidas. Fim de jogo!\n");
+                printf("Voce perdeu todas as vidas. Fim de jogo!\n");
 
                 // Ordena as cartas e coloca nos slots ao perder todas as vidas
                 insertion_sort_cards(&cardList);
@@ -431,7 +472,7 @@ int check_order() {
         }
 
         if (correct_order) {
-            printf("Parabéns! Você acertou a ordem das cartas!\n");
+            printf("Parabéns! Voce acertou a ordem das cartas!\n");
             return 1;
         }
 
@@ -460,10 +501,24 @@ int initialize() {
         return 0;
     }
 
+    // Inicializa o subsistema de imagem
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+        printf("Erro ao inicializar SDL_image: %s\n", IMG_GetError());
+        return 0;
+    }
+
     window = SDL_CreateWindow("Jogo de Ordenação", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     font = TTF_OpenFont("fonte_t.ttf", 32);
+
+    // Carregar a textura do coração
+    heart_texture = load_texture("coracao.png");
+    if (!heart_texture) {
+        printf("Erro ao carregar a imagem de coracao.png\n");
+        return 0;
+    }
+
     return font != NULL && window && renderer;
 }
 
@@ -548,6 +603,7 @@ void render_button(SDL_Rect rect, const char* text) {
 
 // Função de limpeza para liberar recursos
 void cleanup() {
+    SDL_DestroyTexture(heart_texture); 
     Card* current = cardList.head;
     while (current) {
         SDL_DestroyTexture(current->texture);
@@ -561,5 +617,6 @@ void cleanup() {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     TTF_Quit();
+    IMG_Quit();
     SDL_Quit();
 }

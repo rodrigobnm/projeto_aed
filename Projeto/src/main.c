@@ -72,6 +72,11 @@ int main() {
     add_card(&cardList, "Luiz Gonzaga", 1912, "luiz_gonzaga.png");
     add_card(&cardList, "Mestre Vitalino", 1909, "mestre_vitalino.png");
     add_card(&cardList, "Ila de Itamaraca", 1943, "ila_de_itamaraca.png");
+    add_card(&cardList, "Torre de cristal", 2000, "torre_cristal.png");
+    add_card(&cardList, "Marco zero", 1938, "marco_zero.png");
+    add_card(&cardList, "Ladeiras de Olinda", 1537, "olinda_ladeiras.png");
+    add_card(&cardList, "Caranguejo do Manguebeat", 1992, "caranguejo.png");
+    add_card(&cardList, "Museu do cangaco", 1957, "lampiao_fundo.png");
 
     shuffle_cards(&cardList);
 
@@ -224,18 +229,18 @@ void shuffle_cards(CardList* list) {
     srand(time(NULL));
 
     // Copiar todas as cartas da lista para um array
-    Card* cards[9];  // Array para as 9 cartas originais
+    Card* cards[14];  // Array para as 9 cartas originais
     Card* current = list->head;
     int index = 0;
 
     // Copiar as cartas para o array
-    while (current && index < 9) {
+    while (current && index < 14) {
         cards[index++] = current;
         current = current->next;
     }
 
-    // Embaralhar as 9 cartas
-    for (int i = 8; i > 0; i--) {
+    // Embaralhar as 14 cartas
+    for (int i = 13; i > 0; i--) {
         int j = rand() % (i + 1);
         Card* temp = cards[i];
         cards[i] = cards[j];

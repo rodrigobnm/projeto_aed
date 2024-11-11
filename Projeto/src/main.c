@@ -160,13 +160,13 @@ int main() {
 
             if (order_checked) {
                 if (order_check_result == 1) { // Vitória, todas as cartas no lugar e na ordem
-                    render_text("Parabéns! Você venceu!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){0, 255, 0, 255});
+                    render_text("Você venceu!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){0, 255, 0, 255});
                     SDL_RenderPresent(renderer);
                     SDL_Delay(5000);  // Atraso de 5 segundos antes de encerrar
                     running = 0;      // Encerra o programa
                 } else if (lives <= 0) {  // Perda de vidas
-                    render_text("Game Over! Você perdeu todas as vidas.", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){255, 0, 0, 255});
-                    render_text("Ordem Correta ", WINDOW_WIDTH / 2, message_y_position + 80, (SDL_Color){0, 255, 0, 255});
+                    render_text("Game Over!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){255, 0, 0, 255});
+                    render_text("Ordem Correta: ", WINDOW_WIDTH / 2, message_y_position + 80, (SDL_Color){0, 255, 0, 255});
                     SDL_RenderPresent(renderer);
                     SDL_Delay(5000);  // Atraso de 5 segundos antes de encerrar
                     running = 0;      // Encerra o programa

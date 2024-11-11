@@ -33,6 +33,7 @@ typedef struct {
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 TTF_Font* font = NULL;
+TTF_Font* font_for_characters = NULL;
 SDL_Texture* heart_texture = NULL; 
 
 CardList cardList;
@@ -294,6 +295,17 @@ Card* get_card_at(int x, int y) {
     return NULL;
 }
 
+// Função de renderização de texto com a fonte específica
+void render_text_with_font(const char* text, int x, int y, SDL_Color color, TTF_Font* custom_font) {
+    SDL_Surface* surface = TTF_RenderText_Blended(custom_font, text, color);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Rect rect = {x - surface->w / 2, y - surface->h / 2, surface->w, surface->h};
+    SDL_RenderCopy(renderer, texture, NULL, &rect);
+    SDL_FreeSurface(surface);
+    SDL_DestroyTexture(texture);
+}
+
+
 // Função para verificar o índice do encaixe na posição x, y
 int get_slot_index(int x, int y) {
     for (int i = 0; i < NUM_CARDS; i++) {
@@ -325,7 +337,6 @@ void render_menu() {
     render_button(quit_button, "Sair");
 }
 
-// Função para renderizar as vidas do jogador na tela
 // Função para renderizar as vidas do jogador no canto inferior direito
 void render_lives() {
     int heart_width = 50;
@@ -349,6 +360,10 @@ void render_lives() {
 void render_game() {
     render_text("Arraste as cartas para os encaixes na ordem correta", WINDOW_WIDTH / 2, 50, (SDL_Color){255, 255, 255, 255});
 
+    int mouse_x, mouse_y;
+
+    // Obter a posição do mouse
+    SDL_GetMouseState(&mouse_x, &mouse_y);
     // Renderiza o botão voltar
     SDL_Rect back_button = {40, 30, 150, 40};
     int text_x = back_button.x + back_button.w / 2;
@@ -374,8 +389,12 @@ void render_game() {
 
         // Renderiza o nome do personagem abaixo da imagem
         int name_y_position = current->y + CARD_HEIGHT + 10;  // Posição Y abaixo da imagem
-        render_text(current->name, current->x + CARD_WIDTH / 2, name_y_position, (SDL_Color){255, 255, 255, 255});
-
+        if (mouse_x >= current->x && mouse_x <= current->x + CARD_WIDTH &&
+            mouse_y >= current->y && mouse_y <= current->y + CARD_HEIGHT) {
+            // Renderizar o nome do personagem apenas quando o mouse estiver sobre a carta
+            int name_y_position = current->y - 20; // ajustar a posição Y, se necessário
+            render_text_with_font(current->name, current->x + CARD_WIDTH / 2, name_y_position, (SDL_Color){255, 255, 255, 255}, font_for_characters);
+        }
         current = current->next;
     }
 
@@ -488,11 +507,6 @@ int check_order() {
 }
 
 
-
-
-
-
-
 // Função para renderizar feedback visual
 void render_feedback(int slot_index, int correct) {
     SDL_Color color = correct ? (SDL_Color){0, 255, 0, 255} : (SDL_Color){255, 0, 0, 255};
@@ -516,6 +530,7 @@ int initialize() {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     font = TTF_OpenFont("fonte_t.ttf", 32);
+    font_for_characters = TTF_OpenFont("font_t_2.ttf", 18);  
 
     // Carregar a textura do coração
     heart_texture = load_texture("coracao.png");
@@ -619,6 +634,7 @@ void cleanup() {
     }
 
     TTF_CloseFont(font);
+    TTF_CloseFont(font_for_characters);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     TTF_Quit();

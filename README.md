@@ -1,4 +1,4 @@
-# <p align="center"> PROJETO AED </p>
+# <p align="center"> PernamSort </p>
 
 ---
 

@@ -63,6 +63,8 @@
 #### Após o clone, apenas rode os seguintes comandos:
     - Atualize: sudo apt=get update
     - Baixe: sudo apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev
+    - Busque: cd Projeto
+    - Busque: cd src
     - Rode: gcc main.c -o jogo -I/usr/include/SDL2 -lSDL2 -lSDL2_image -lSDL2_ttf
     - Rode: ./jogo
 -----

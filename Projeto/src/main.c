@@ -84,7 +84,17 @@ int main() {
         add_card(&cardList, "Caranguejo do Manguebeat", 1992, "img/caranguejo.png");
         add_card(&cardList, "Museu do cangaco", 1957, "img/lampiao_fundo.png");
 
+        for (int i = 0; i < NUM_CARDS; i++) {
+            slots[i].x = (WINDOW_WIDTH - ((CARD_WIDTH + 10) * NUM_CARDS - 10)) / 2 + (CARD_WIDTH + 10) * i;
+            slots[i].y = 400;
+            slots[i].w = CARD_WIDTH;
+            slots[i].h = CARD_HEIGHT;
+        }
+        
         shuffle_cards(&cardList);
+        lives = 2;
+        check_order_button_pressed = 0;
+        dragged_card = NULL;
 
         for (int i = 0; i < NUM_CARDS; i++) {
             int total_width = (CARD_WIDTH + 10) * NUM_CARDS - 10;
@@ -285,7 +295,6 @@ Card* get_card_at(int x, int y) {
     return NULL;
 }
 
-
 void render_text_with_font(const char* text, int x, int y, SDL_Color color, TTF_Font* custom_font) {
     SDL_Surface* surface = TTF_RenderText_Blended(custom_font, text, color);
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -295,8 +304,6 @@ void render_text_with_font(const char* text, int x, int y, SDL_Color color, TTF_
     SDL_DestroyTexture(texture);
 }
 
-
-
 int get_slot_index(int x, int y) {
     for (int i = 0; i < NUM_CARDS; i++) {
         if (x >= slots[i].x && x <= slots[i].x + slots[i].w && y >= slots[i].y && y <= slots[i].y + slots[i].h) {
@@ -305,8 +312,6 @@ int get_slot_index(int x, int y) {
     }
     return -1;
 }
-
-
 
 void render_menu() {
     
@@ -322,8 +327,6 @@ void render_menu() {
     render_button(start_button, "Iniciar Jogo");
     render_button(quit_button, "Sair");
 }
-
-
 
 void render_lives() {
     int heart_width = 50;
@@ -341,7 +344,6 @@ void render_lives() {
         SDL_RenderCopy(renderer, heart_texture, NULL, &heart_rect);
     }
 }
-
 
 void render_game() {
     
@@ -406,16 +408,12 @@ void render_game() {
             current = current->next;
         }
 
-        if (!all_cards_in_slots) {
+        if (!all_cards_in_slots ) {
             int message_y_position = 100;
             render_text("Todas as cartas devem ser inseridas!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){255, 0, 0, 255});
         }
     }
 }
-
-
-
-
 
 int check_order() {
     check_order_button_pressed = 1;
@@ -610,7 +608,6 @@ void render_button(SDL_Rect rect, const char* text) {
     SDL_RenderFillRect(renderer, &rect);
     render_text(text, rect.x + rect.w / 2, rect.y + rect.h / 2, (SDL_Color){255, 255, 255, 255});
 }
-
 
 
 void cleanup() {

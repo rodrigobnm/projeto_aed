@@ -53,7 +53,7 @@
 
 ### <p align="center">📌 Sobre o Jogo</p>
 
-- **Slide**: [ https://www.canva.com/design/DAGWOcW0SL4/l73Rf50bApDNFstRkMlBRA/edit?utm_content=DAGWOcW0SL4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton](https://www.canva.com/design/DAGWOcW0SL4/l73Rf50bApDNFstRkMlBRA/edit?utm_content=DAGWOcW0SL4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+- **Slide**: https://www.canva.com/design/DAGWOcW0SL4/l73Rf50bApDNFstRkMlBRA/edit?utm_content=DAGWOcW0SL4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 
 - **Exclusividade**: Jogo exclusivo pra Linux
 

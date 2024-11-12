@@ -67,6 +67,7 @@ void render_lives();
 int main() {
     int ok = 1;
     while(ok){
+        cleanup();
         if (!initialize()) return -1;
         
         add_card(&cardList, "Alceu Valenca", 1946, "img/alceu_valenca.png");
@@ -201,7 +202,12 @@ int main() {
         }
 
     }
-        cleanup();
+        TTF_CloseFont(font);
+        TTF_CloseFont(font_for_characters);
+
+        TTF_Quit();
+        IMG_Quit();
+        SDL_Quit();
         return 0;
 }
 
@@ -611,21 +617,32 @@ void render_button(SDL_Rect rect, const char* text) {
 
 
 void cleanup() {
-    SDL_DestroyTexture(heart_texture); 
-    Card* current = cardList.head;
-    while (current) {
+if (heart_texture) {
+    SDL_DestroyTexture(heart_texture);
+    heart_texture = NULL;
+}
 
+Card* current = cardList.head;
+while (current) {
+    if (current->texture) {
         SDL_DestroyTexture(current->texture);
-        Card* temp = current;
-        current = current->next;
-        free(temp);
+        current->texture = NULL;
     }
+    Card* temp = current;
+    current = current->next;
+    free(temp); 
+}
 
-    TTF_CloseFont(font);
-    TTF_CloseFont(font_for_characters);
+cardList.head = NULL;
+cardList.tail = NULL;
+
+if (renderer) {
     SDL_DestroyRenderer(renderer);
+    renderer = NULL;
+}
+
+if (window) {
     SDL_DestroyWindow(window);
-    TTF_Quit();
-    IMG_Quit();
-    SDL_Quit();
+    window = NULL;
+}
 }

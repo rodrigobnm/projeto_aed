@@ -49,24 +49,26 @@
 </table>
 </div>
 
----
+-----
+
+### <p align="center">📌 Sobre o Jogo</p>
+
+- **Slide**: https://www.canva.com/design/DAGWOcW0SL4/l73Rf50bApDNFstRkMlBRA/edit?utm_content=DAGWOcW0SL4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+
+- **Exclusividade**: Jogo exclusivo pra Linux
+
+-----
 
 ### <p align="center">🎯 Instruções </p>
-    -
-    -
-    -
-    -
----
+#### Após o clone, apenas rode os seguintes comandos:
+    - Atualize: sudo apt=get update
+    - Baixe: sudo apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev
+    - Rode: gcc main.c card.c -o jogo -I/usr/include/SDL2 -lSDL2 -lSDL2_image -lSDL2_ttf
+    - Rode: ./jogo
+-----
 
-### <p align="center">📌 Tecnologias Utilizadas</p>
+### <p align="center">📝 Pendências</p>
 
-- **Linguagens**: C
-- **Ferramentas**: Git, GitHub, Visual Studio Code, Canva
+- Jogo concluído com sucesso.
 
----
-
-### <p align="center">📝 Sobre o Projeto</p>
-
-#### <p align="center">O nosso jogo tem como temática "Personalidades de grande relevância Pernambucana"<p>
-
----
+-----

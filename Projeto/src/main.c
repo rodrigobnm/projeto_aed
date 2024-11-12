@@ -66,20 +66,20 @@ void render_lives();
 int main() {
     if (!initialize()) return -1;
     
-    add_card(&cardList, "Alceu Valenca", 1946, "alceu_valenca.png");
-    add_card(&cardList, "Ariano Suassuna", 1927, "ariano_suassuna.png");
-    add_card(&cardList, "Chico Science", 1966, "chico_science.png");
-    add_card(&cardList, "Gilberto Freyre", 1900, "gilberto_freyre.png");
-    add_card(&cardList, "J Borges", 1935, "j_borges.png");
-    add_card(&cardList, "Lampiao", 1898, "lampiao.png");
-    add_card(&cardList, "Luiz Gonzaga", 1912, "luiz_gonzaga.png");
-    add_card(&cardList, "Mestre Vitalino", 1909, "mestre_vitalino.png");
-    add_card(&cardList, "Ila de Itamaraca", 1943, "ila_de_itamaraca.png");
-    add_card(&cardList, "Torre de cristal", 2000, "torre_cristal.png");
-    add_card(&cardList, "Marco zero", 1938, "marco_zero.png");
-    add_card(&cardList, "Ladeiras de Olinda", 1537, "olinda_ladeiras.png");
-    add_card(&cardList, "Caranguejo do Manguebeat", 1992, "caranguejo.png");
-    add_card(&cardList, "Museu do cangaco", 1957, "lampiao_fundo.png");
+    add_card(&cardList, "Alceu Valenca", 1946, "img/alceu_valenca.png");
+    add_card(&cardList, "Ariano Suassuna", 1927, "img/ariano_suassuna.png");
+    add_card(&cardList, "Chico Science", 1966, "img/chico_science.png");
+    add_card(&cardList, "Gilberto Freyre", 1900, "img/gilberto_freyre.png");
+    add_card(&cardList, "J Borges", 1935, "img/j_borges.png");
+    add_card(&cardList, "Lampiao", 1898, "img/lampiao.png");
+    add_card(&cardList, "Luiz Gonzaga", 1912, "img/luiz_gonzaga.png");
+    add_card(&cardList, "Mestre Vitalino", 1909, "img/mestre_vitalino.png");
+    add_card(&cardList, "Ila de Itamaraca", 1943, "img/ila_de_itamaraca.png");
+    add_card(&cardList, "Torre de cristal", 2000, "img/torre_cristal.png");
+    add_card(&cardList, "Marco zero", 1938, "img/marco_zero.png");
+    add_card(&cardList, "Ladeiras de Olinda", 1537, "img/olinda_ladeiras.png");
+    add_card(&cardList, "Caranguejo do Manguebeat", 1992, "img/caranguejo.png");
+    add_card(&cardList, "Museu do cangaco", 1957, "img/lampiao_fundo.png");
 
     shuffle_cards(&cardList);
 
@@ -168,7 +168,7 @@ int main() {
 
             if (order_checked) {
                 if (order_check_result == 1) { 
-                    render_text("Voce venceu!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){0, 255, 0, 255});
+                    render_text("Voce venceu!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){0, 0, 0, 255});
                     SDL_RenderPresent(renderer);
                     SDL_Delay(5000);  
                     running = 0;      
@@ -342,7 +342,7 @@ void render_game() {
     SDL_Rect background_rect = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
     SDL_RenderCopy(renderer, background_game_texture, NULL, &background_rect);
 
-    render_text("Arraste as cartas para os encaixes na ordem de idade.", WINDOW_WIDTH / 2, 50, (SDL_Color){255, 255, 255, 255});
+    render_text("Arraste as cartas para os encaixes na ordem de idade.", WINDOW_WIDTH / 2, 50, (SDL_Color){0, 0, 0, 255});
 
     int mouse_x, mouse_y;
 
@@ -493,8 +493,8 @@ int initialize() {
     }
 
 
-    font = TTF_OpenFont("fonte_t.ttf", 32);
-    font_for_characters = TTF_OpenFont("font_t_2.ttf", 18);  
+    font = TTF_OpenFont("fonts/fonte_t.ttf", 32);
+    font_for_characters = TTF_OpenFont("fonts/font_t_2.ttf", 18);  
 
 
     if (!font || !font_for_characters) {
@@ -503,21 +503,21 @@ int initialize() {
     }
 
 
-    heart_texture = load_texture("coracao.png");
+    heart_texture = load_texture("img/coracao.png");
     if (!heart_texture) {
         printf("Erro ao carregar a imagem de coracao.png\n");
         return 0;
     }
 
    
-    background_texture = load_texture("background.png");
+    background_texture = load_texture("img/background.png");
     if (!background_texture) {
         printf("Erro ao carregar a imagem de background.png\n");
         return 0;
     }
 
 
-    background_game_texture = load_texture("backgroundJogo.png");
+    background_game_texture = load_texture("img/backgroundJogo.png");
     if (!background_game_texture) {
         printf("Erro ao carregar a imagem de backgroundJogo.png\n");
         return 0;

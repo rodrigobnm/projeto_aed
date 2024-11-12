@@ -63,130 +63,136 @@ void insertion_sort_cards(CardList* list);
 void render_text_with_font(const char* text, int x, int y, SDL_Color color, TTF_Font* custom_font);
 void render_lives(); 
 
+
 int main() {
-    if (!initialize()) return -1;
-    
-    add_card(&cardList, "Alceu Valenca", 1946, "img/alceu_valenca.png");
-    add_card(&cardList, "Ariano Suassuna", 1927, "img/ariano_suassuna.png");
-    add_card(&cardList, "Chico Science", 1966, "img/chico_science.png");
-    add_card(&cardList, "Gilberto Freyre", 1900, "img/gilberto_freyre.png");
-    add_card(&cardList, "J Borges", 1935, "img/j_borges.png");
-    add_card(&cardList, "Lampiao", 1898, "img/lampiao.png");
-    add_card(&cardList, "Luiz Gonzaga", 1912, "img/luiz_gonzaga.png");
-    add_card(&cardList, "Mestre Vitalino", 1909, "img/mestre_vitalino.png");
-    add_card(&cardList, "Ila de Itamaraca", 1943, "img/ila_de_itamaraca.png");
-    add_card(&cardList, "Torre de cristal", 2000, "img/torre_cristal.png");
-    add_card(&cardList, "Marco zero", 1938, "img/marco_zero.png");
-    add_card(&cardList, "Ladeiras de Olinda", 1537, "img/olinda_ladeiras.png");
-    add_card(&cardList, "Caranguejo do Manguebeat", 1992, "img/caranguejo.png");
-    add_card(&cardList, "Museu do cangaco", 1957, "img/lampiao_fundo.png");
+    int ok = 1;
+    while(ok){
+        if (!initialize()) return -1;
+        
+        add_card(&cardList, "Alceu Valenca", 1946, "img/alceu_valenca.png");
+        add_card(&cardList, "Ariano Suassuna", 1927, "img/ariano_suassuna.png");
+        add_card(&cardList, "Chico Science", 1966, "img/chico_science.png");
+        add_card(&cardList, "Gilberto Freyre", 1900, "img/gilberto_freyre.png");
+        add_card(&cardList, "J Borges", 1935, "img/j_borges.png");
+        add_card(&cardList, "Lampiao", 1898, "img/lampiao.png");
+        add_card(&cardList, "Luiz Gonzaga", 1912, "img/luiz_gonzaga.png");
+        add_card(&cardList, "Mestre Vitalino", 1909, "img/mestre_vitalino.png");
+        add_card(&cardList, "Ila de Itamaraca", 1943, "img/ila_de_itamaraca.png");
+        add_card(&cardList, "Torre de cristal", 2000, "img/torre_cristal.png");
+        add_card(&cardList, "Marco zero", 1938, "img/marco_zero.png");
+        add_card(&cardList, "Ladeiras de Olinda", 1537, "img/olinda_ladeiras.png");
+        add_card(&cardList, "Caranguejo do Manguebeat", 1992, "img/caranguejo.png");
+        add_card(&cardList, "Museu do cangaco", 1957, "img/lampiao_fundo.png");
 
-    shuffle_cards(&cardList);
+        shuffle_cards(&cardList);
 
-    for (int i = 0; i < NUM_CARDS; i++) {
-        int total_width = (CARD_WIDTH + 10) * NUM_CARDS - 10;
-        int starting_x = (WINDOW_WIDTH - total_width) / 2;
+        for (int i = 0; i < NUM_CARDS; i++) {
+            int total_width = (CARD_WIDTH + 10) * NUM_CARDS - 10;
+            int starting_x = (WINDOW_WIDTH - total_width) / 2;
 
-        slots[i].x = starting_x + (CARD_WIDTH + 10) * i;
-        slots[i].y = 400;
-        slots[i].w = CARD_WIDTH;
-        slots[i].h = CARD_HEIGHT;
-    }
+            slots[i].x = starting_x + (CARD_WIDTH + 10) * i;
+            slots[i].y = 400;
+            slots[i].w = CARD_WIDTH;
+            slots[i].h = CARD_HEIGHT;
+        }
 
-    int running = 1;
-    int in_menu = 1;
-    int order_checked = 0;
-    int order_check_result = 0;
-    SDL_Event event;
+        int running = 1;
+        int in_menu = 1;
+        int order_checked = 0;
+        int order_check_result = 0;
+        SDL_Event event;
 
-    while (running) {
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                running = 0;
-            } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
-                int x = event.button.x;
-                int y = event.button.y;
+        while (running) {
+            while (SDL_PollEvent(&event)) {
+                if (event.type == SDL_QUIT) {
+                    running = 0;
+                    ok = 0;
+                } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                    int x = event.button.x;
+                    int y = event.button.y;
 
-                if (in_menu) {
-                    if (x >= (WINDOW_WIDTH - 200) / 2 && x <= (WINDOW_WIDTH + 200) / 2 && y >= 250 && y <= 300)  {
-                        in_menu = 0;
-                    } else if (x >= (WINDOW_WIDTH - 200) / 2 && x <= (WINDOW_WIDTH + 200) / 2 && y >= 350 && y <= 400) {
-                        running = 0;
-                    }
-                } else {
-                    if (x >= 10 && x <= 160 && y >= 10 && y <= 70) {
-                        in_menu = 1;
-                        order_checked = 0;
-                    }
-
-                    Card* card = get_card_at(x, y);
-                    if (card) {
-                        dragged_card = card;
-                        offset_x = x - card->x;
-                        offset_y = y - card->y;
-                    }
-
-                    int button_x = (WINDOW_WIDTH - 200) / 2;
-                    int button_y = 600;
-                    if (x >= button_x && x <= button_x + 200 && y >= button_y && y <= button_y + 50) {
-
-                        if (check_order() == 1) {
-                            order_check_result = 1;
-                        } else {
-                            order_check_result = 0;
-                        }
-                        order_checked = 1;
-
-                        if (order_check_result == 1 || lives <= 0) {
+                    if (in_menu) {
+                        if (x >= (WINDOW_WIDTH - 200) / 2 && x <= (WINDOW_WIDTH + 200) / 2 && y >= 250 && y <= 300)  {
+                            in_menu = 0;
+                        } else if (x >= (WINDOW_WIDTH - 200) / 2 && x <= (WINDOW_WIDTH + 200) / 2 && y >= 350 && y <= 400) {
                             running = 0;
+                            ok = 0;
+                        }
+                    } else {
+                        if (x >= 10 && x <= 160 && y >= 10 && y <= 70) {
+                            in_menu = 1;
+                            order_checked = 0;
+                        }
+
+                        Card* card = get_card_at(x, y);
+                        if (card) {
+                            dragged_card = card;
+                            offset_x = x - card->x;
+                            offset_y = y - card->y;
+                        }
+
+                        int button_x = (WINDOW_WIDTH - 200) / 2;
+                        int button_y = 600;
+                        if (x >= button_x && x <= button_x + 200 && y >= button_y && y <= button_y + 50) {
+
+                            if (check_order() == 1) {
+                                order_check_result = 1;
+                            } else {
+                                order_check_result = 0;
+                            }
+                            order_checked = 1;
+
+                            if (order_check_result == 1 || lives <= 0) {
+                                running = 0;
+                            }
                         }
                     }
-                }
-            } else if (event.type == SDL_MOUSEMOTION && dragged_card) {
-                dragged_card->x = event.motion.x - offset_x;
-                dragged_card->y = event.motion.y - offset_y;
-            } else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT && dragged_card) {
-                int slot_index = get_slot_index(dragged_card->x, dragged_card->y);
-                if (slot_index != -1) {
-                    dragged_card->x = slots[slot_index].x;
-                    dragged_card->y = slots[slot_index].y;
-                    dragged_card->slot_index = slot_index;
-                }
-                dragged_card = NULL;
-            }
-        }
-
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
-
-        if (in_menu) {
-            render_menu();
-        } else {
-            render_game();
-            
-            int message_y_position = 100 + CARD_WIDTH + 20;
-
-            if (order_checked) {
-                if (order_check_result == 1) { 
-                    render_text("Voce venceu!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){0, 0, 0, 255});
-                    SDL_RenderPresent(renderer);
-                    SDL_Delay(5000);  
-                    running = 0;      
-                } else if (lives <= 0) {  
-                    render_text("Game Over!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){255, 0, 0, 255});
-                    render_text("Ordem Correta: ", WINDOW_WIDTH / 2, message_y_position + 80, (SDL_Color){0, 255, 0, 255});
-                    SDL_RenderPresent(renderer);
-                    SDL_Delay(5000);  
-                    running = 0;      
+                } else if (event.type == SDL_MOUSEMOTION && dragged_card) {
+                    dragged_card->x = event.motion.x - offset_x;
+                    dragged_card->y = event.motion.y - offset_y;
+                } else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT && dragged_card) {
+                    int slot_index = get_slot_index(dragged_card->x, dragged_card->y);
+                    if (slot_index != -1) {
+                        dragged_card->x = slots[slot_index].x;
+                        dragged_card->y = slots[slot_index].y;
+                        dragged_card->slot_index = slot_index;
+                    }
+                    dragged_card = NULL;
                 }
             }
+
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderClear(renderer);
+
+            if (in_menu) {
+                render_menu();
+            } else {
+                render_game();
+                
+                int message_y_position = 100 + CARD_WIDTH + 20;
+
+                if (order_checked) {
+                    if (order_check_result == 1) { 
+                        render_text("Voce venceu!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){0, 0, 0, 255});
+                        SDL_RenderPresent(renderer);
+                        SDL_Delay(2000);  
+                        running = 0;     
+                    } else if (lives <= 0) {  
+                        render_text("Game Over!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){255, 0, 0, 255});
+                        render_text("Ordem Correta: ", WINDOW_WIDTH / 2, message_y_position + 80, (SDL_Color){0, 255, 0, 255});
+                        SDL_RenderPresent(renderer);
+                        SDL_Delay(2000);  
+                        running = 0;     
+                    }
+                }
+            }
+
+            SDL_RenderPresent(renderer);
         }
 
-        SDL_RenderPresent(renderer);
     }
-
-    cleanup();
-    return 0;
+        cleanup();
+        return 0;
 }
 
 

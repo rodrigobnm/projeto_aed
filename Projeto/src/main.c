@@ -18,7 +18,6 @@ typedef struct Card {
     int birth_year;
     char image_path[50];
     SDL_Texture* texture;
-    SDL_Texture* background_texture;
     struct Card* next;
     struct Card* prev;
     int x, y;
@@ -34,7 +33,11 @@ SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 TTF_Font* font = NULL;
 TTF_Font* font_for_characters = NULL;
-SDL_Texture* heart_texture = NULL; 
+SDL_Texture* heart_texture = NULL;
+SDL_Texture* background_texture = NULL;  // Declarar a textura do fundo
+SDL_Texture* background_game_texture = NULL;  // Nova textura de fundo para o jogo
+
+
 
 CardList cardList;
 int lives = 2;  // Atualizado de 3 para 2 vidas
@@ -47,14 +50,11 @@ int check_order_button_pressed = 0;  // Variável global para verificar o clique
 void add_card(CardList* list, const char* name, int birth_year, const char* image_path);
 void shuffle_cards(CardList* list);
 int check_order();
-int is_sorted(CardList* list);
 Card* get_card_at(int x, int y);
 int get_slot_index(int x, int y);
-void render_feedback(int slot_index, int correct);
 int initialize();
 void render_text(const char* text, int x, int y, SDL_Color color);
 SDL_Texture* load_texture(const char* path);
-SDL_Texture* load_background_texture(const char* character_name);
 void render_menu();
 void render_game();
 void cleanup();
@@ -196,7 +196,6 @@ void add_card(CardList* list, const char* name, int birth_year, const char* imag
     new_card->birth_year = birth_year;
     strcpy(new_card->image_path, image_path);
     new_card->texture = load_texture(image_path);
-    new_card->background_texture = load_background_texture(name);
     new_card->next = NULL;
     new_card->prev = list->tail;
 
@@ -270,18 +269,6 @@ void shuffle_cards(CardList* list) {
 }
 
 
-// Função para verificar se as cartas estão ordenadas
-int is_sorted(CardList* list) {
-    Card* current = list->head;
-    while (current && current->next) {
-        if (current->birth_year > current->next->birth_year) {
-            return 0;
-        }
-        current = current->next;
-    }
-    return 1;
-}
-
 // Função para pegar uma carta na posição x, y
 Card* get_card_at(int x, int y) {
     Card* current = cardList.head;
@@ -315,26 +302,23 @@ int get_slot_index(int x, int y) {
     return -1;
 }
 
-// Função para carregar a textura de fundo de acordo com o personagem
-SDL_Texture* load_background_texture(const char* character_name) {
-    char background_path[60];
-    snprintf(background_path, sizeof(background_path), "%s_fundo.png", character_name);
-    SDL_Texture* background_texture = load_texture(background_path);
 
-    if (!background_texture) {
-        background_texture = load_texture("default_fundo.png");
-    }
-    return background_texture;
-}
 
-// Função para exibir o menu
 void render_menu() {
+    // Renderiza o fundo
+    SDL_Rect background_rect = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
+    SDL_RenderCopy(renderer, background_texture, NULL, &background_rect);
+
+    // Renderiza o texto e os botões
     render_text("Menu Principal", WINDOW_WIDTH / 2, 100, (SDL_Color){255, 255, 255, 255});
+    
     SDL_Rect start_button = {WINDOW_WIDTH / 2 - 100, 250, 200, 50};
     SDL_Rect quit_button = {WINDOW_WIDTH / 2 - 100, 350, 200, 50};
+    
     render_button(start_button, "Iniciar Jogo");
     render_button(quit_button, "Sair");
 }
+
 
 // Função para renderizar as vidas do jogador no canto inferior direito
 void render_lives() {
@@ -355,8 +339,11 @@ void render_lives() {
 }
 
 
-// Função para renderizar o jogo
 void render_game() {
+    // Renderiza o fundo do jogo
+    SDL_Rect background_rect = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
+    SDL_RenderCopy(renderer, background_game_texture, NULL, &background_rect);
+
     render_text("Arraste as cartas para os encaixes na ordem correta", WINDOW_WIDTH / 2, 50, (SDL_Color){255, 255, 255, 255});
 
     int mouse_x, mouse_y;
@@ -372,10 +359,7 @@ void render_game() {
     // Renderiza as cartas
     Card* current = cardList.head;
     while (current) {
-        if (current->background_texture) {
-            SDL_RenderCopy(renderer, current->background_texture, NULL, NULL);
-        }
-
+        
         SDL_Rect rect = {current->x, current->y, CARD_WIDTH, CARD_HEIGHT};
         if (dragged_card == current) {
             SDL_SetRenderDrawColor(renderer, 50, 50, 50, 100);
@@ -391,8 +375,7 @@ void render_game() {
         if (mouse_x >= current->x && mouse_x <= current->x + CARD_WIDTH &&
             mouse_y >= current->y && mouse_y <= current->y + CARD_HEIGHT) {
             // Renderizar o nome do personagem apenas quando o mouse estiver sobre a carta
-            int name_y_position = current->y - 20; // ajustar a posição Y, se necessário
-            render_text_with_font(current->name, current->x + CARD_WIDTH / 2, name_y_position, (SDL_Color){255, 255, 255, 255}, font_for_characters);
+            render_text_with_font(current->name, current->x + CARD_WIDTH / 2, name_y_position - 20, (SDL_Color){255, 255, 255, 255}, font_for_characters);
         }
         current = current->next;
     }
@@ -409,24 +392,7 @@ void render_game() {
     // Renderiza as vidas (corações) na tela
     render_lives();
 
-            if (check_order_button_pressed) {
-        int all_cards_in_slots = 1;
-        Card* current = cardList.head;
-        while (current) {
-            if (current->slot_index == -1) {
-                all_cards_in_slots = 0;
-                break;
-            }
-            current = current->next;
-        }
-
-        if (!all_cards_in_slots) {
-            int message_y_position = 100;
-            render_text("Todas as cartas devem ser inseridas!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){255, 0, 0, 255});
-        }
-    }
-    
-if (check_order_button_pressed) {
+    if (check_order_button_pressed) {
         int all_cards_in_slots = 1;
         Card* current = cardList.head;
         while (current) {
@@ -443,6 +409,7 @@ if (check_order_button_pressed) {
         }
     }
 }
+
 
 
 
@@ -505,15 +472,8 @@ int check_order() {
     }
 }
 
-
-// Função para renderizar feedback visual
-void render_feedback(int slot_index, int correct) {
-    SDL_Color color = correct ? (SDL_Color){0, 255, 0, 255} : (SDL_Color){255, 0, 0, 255};
-    render_text(correct ? "V" : "X", slots[slot_index].x + CARD_WIDTH / 2, slots[slot_index].y - 20, color);
-}
-
-// Função para inicializar SDL
 int initialize() {
+    // Inicializa SDL e TTF
     if (SDL_Init(SDL_INIT_VIDEO) < 0 || TTF_Init() == -1) {
         printf("Erro: %s\n", SDL_GetError());
         return 0;
@@ -525,11 +485,25 @@ int initialize() {
         return 0;
     }
 
+    // Cria a janela e o renderizador
     window = SDL_CreateWindow("Jogo de Ordenação", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
+    // Verifica se a janela e o renderizador foram criados corretamente
+    if (!window || !renderer) {
+        printf("Erro ao criar janela ou renderizador: %s\n", SDL_GetError());
+        return 0;
+    }
+
+    // Carregar as fontes
     font = TTF_OpenFont("fonte_t.ttf", 32);
     font_for_characters = TTF_OpenFont("font_t_2.ttf", 18);  
+
+    // Verificar se as fontes foram carregadas corretamente
+    if (!font || !font_for_characters) {
+        printf("Erro ao carregar fontes: %s\n", TTF_GetError());
+        return 0;
+    }
 
     // Carregar a textura do coração
     heart_texture = load_texture("coracao.png");
@@ -538,8 +512,23 @@ int initialize() {
         return 0;
     }
 
-    return font != NULL && window && renderer;
+    // Carregar a textura do fundo para o menu
+    background_texture = load_texture("background.png");
+    if (!background_texture) {
+        printf("Erro ao carregar a imagem de background.png\n");
+        return 0;
+    }
+
+    // Carregar a textura do fundo para o jogo
+    background_game_texture = load_texture("backgroundJogo.png");
+    if (!background_game_texture) {
+        printf("Erro ao carregar a imagem de backgroundJogo.png\n");
+        return 0;
+    }
+
+    return 1; // Inicialização bem-sucedida
 }
+
 
 // Função para ordenar as cartas usando o Insertion Sort
 void insertion_sort_cards(CardList* list) {
@@ -625,8 +614,8 @@ void cleanup() {
     SDL_DestroyTexture(heart_texture); 
     Card* current = cardList.head;
     while (current) {
+
         SDL_DestroyTexture(current->texture);
-        SDL_DestroyTexture(current->background_texture);
         Card* temp = current;
         current = current->next;
         free(temp);

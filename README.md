@@ -52,7 +52,7 @@
 ---
 
 ### <p align="center">🎯 Instruções </p>
-    -
+    - Clone o Repositorio https://github.com/rodrigobnm/projeto_aed.git
     -
     -
     -

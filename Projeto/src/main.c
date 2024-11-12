@@ -184,7 +184,7 @@ int main() {
 
                 if (order_checked) {
                     if (order_check_result == 1) { 
-                        render_text("Voce venceu!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){0, 0, 0, 255});
+                        render_text("Voce venceu!", WINDOW_WIDTH / 2, message_y_position, (SDL_Color){0, 255, 0, 255});
                         SDL_RenderPresent(renderer);
                         SDL_Delay(2000);  
                         running = 0;     
